@@ -1,0 +1,60 @@
+# SENTIVRA — which MITRE techniques each kind of finding maps to (brief §31).
+#
+# ATT&CK entries are listed by technique ID only. Names and tactics come from
+# attack_index.json, which scripts/build_attack_index.py generates from
+# MITRE's official STIX data (currently ATT&CK v19.2). That keeps names and
+# tactics from drifting, and backend/tests/test_mitre_mappings.py fails if an
+# ID here is unknown or has been revoked.
+#
+# Prompt-injection techniques aren't part of ATT&CK. They come from MITRE
+# ATLAS (the sibling framework for attacks on AI systems), so those entries
+# are written out in full with their source. Checked against the ATLAS data
+# release v5.6.0 (github.com/mitre-atlas/atlas-data, dist/ATLAS.yaml).
+#
+# Deliberately unmapped (no key here): findings where the evidence doesn't
+# identify a technique, such as a large outbound transfer (volume alone
+# doesn't show the channel), periodic beaconing (a timing pattern), mass file
+# modification (an indicator, not proof of encryption for impact), a rare
+# parent/child process pair, or high file entropy.
+
+# ---- Web / messaging --------------------------------------------------------
+sql_injection: [T1190]
+phishing_message_link: [T1566.002]
+phishing_message_attachment: [T1566.001]
+phishing_via_service: [T1566.003]        # Telegram / WhatsApp: phishing through messaging services
+phishing_generic: [T1566]
+malicious_link: [T1204.001]
+
+# ---- Network ----------------------------------------------------------------
+network_scanning: [T1046]
+network_brute_force: [T1110]
+network_flood: [T1498.001]
+dns_tunneling: [T1071.004]
+
+# ---- Authentication logs ----------------------------------------------------
+auth_password_guessing: [T1110.001]      # many failures against one account
+auth_password_spraying: [T1110.003]      # one source, failures across many accounts
+account_created: [T1136.001]
+account_privileged_group_change: [T1098]
+event_log_cleared: [T1685.005]           # formerly T1070.001, revoked in ATT&CK v19
+
+# ---- Endpoint persistence ---------------------------------------------------
+persistence_autostart: [T1547]
+persistence_run_key_or_startup_folder: [T1547.001]
+persistence_scheduled_task: [T1053.005]
+persistence_cron: [T1053.003]
+persistence_service: [T1543.003]
+
+# ---- Prompt injection (MITRE ATLAS) -----------------------------------------
+prompt_injection_direct:
+  - {technique_id: AML.T0051.000, technique_name: "LLM Prompt Injection: Direct", tactic: Execution, source: MITRE ATLAS v5.6.0}
+prompt_injection_indirect:
+  - {technique_id: AML.T0051.001, technique_name: "LLM Prompt Injection: Indirect", tactic: Execution, source: MITRE ATLAS v5.6.0}
+llm_jailbreak:
+  - {technique_id: AML.T0054, technique_name: LLM Jailbreak, tactic: "Privilege Escalation, Defense Evasion", source: MITRE ATLAS v5.6.0}
+llm_system_prompt_extraction:
+  - {technique_id: AML.T0056, technique_name: Extract LLM System Prompt, tactic: Exfiltration, source: MITRE ATLAS v5.6.0}
+llm_data_leakage:
+  - {technique_id: AML.T0057, technique_name: LLM Data Leakage, tactic: Exfiltration, source: MITRE ATLAS v5.6.0}
+ai_agent_tool_invocation:
+  - {technique_id: AML.T0053, technique_name: AI Agent Tool Invocation, tactic: "Execution, Privilege Escalation", source: MITRE ATLAS v5.6.0}

@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+
+# Databases (local demo state — never commit real data)
+*.db
+*.db-journal
+sentivra.db
+
+# Env / secrets
+.env
+.env.local
+*.pem
+*.key
+
+# Node / frontend
+node_modules/
+.next/
+out/
+frontend/.env*.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Research data: downloaded and generated datasets are reproducible from
+# the scripts in research/datasets/, so the data itself is never committed.
+research/datasets/raw/
+research/datasets/generated/
+
+# Local runtime state: generated API signing key and client-secret hashes
+.sentivra/
+
+# Freebuff tool state
+.freebuff/
+
+# Local-only documents — kept on this machine, never pushed to GitHub
+PRESENTATION.md
+PRESENTATION.pptx
+WALKTHROUGH.md
