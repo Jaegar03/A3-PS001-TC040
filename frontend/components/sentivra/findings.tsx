@@ -29,6 +29,7 @@ export function FindingCard({ finding }: { finding: DetectionResult }) {
         <div className="flex items-center gap-2">
           <span className="font-medium">{finding.detector}</span>
           <SeverityBadge severity={finding.severity} />
+          {finding.status && finding.status !== "suspicious" ? <span className="text-xs text-amber-700 dark:text-amber-300">{finding.status.replaceAll("_", " ")}</span> : null}
         </div>
         <span className="text-xs text-muted-foreground tabular">
           score {finding.score.toFixed(2)} · confidence {percent(finding.confidence)} · action {finding.recommended_action}

@@ -8,7 +8,14 @@ from urllib.parse import urlparse
 import tldextract
 
 from app.detectors.base import AvailabilityStatus, BaseDetector, DetectorAvailability
-from app.detectors.common import action_for, event_text, event_urls, noisy_or, safe_result, severity_from_score
+from app.detectors.common import (
+    action_for,
+    event_text,
+    event_urls,
+    noisy_or,
+    safe_result,
+    severity_from_score,
+)
 from app.events.schema import SecurityEvent, SecurityEventType
 from app.schemas.detection import DetectionResult, DetectorCategory, Evidence
 
@@ -45,7 +52,7 @@ class URLDetector(BaseDetector):
                 signals.append(("unregistered_or_local_domain", .25))
             if host.count(".") >= 4 or len(host) > 60:
                 signals.append(("unusually_complex_host", .4))
-            if len(url) > 240 or re.search(r"(?:%25){2,}|%00", url, re.I):
+            if len(url) > 240 or re.search(r"(?:%25){2,}|%00", url, re.IGNORECASE):
                 signals.append(("encoded_or_oversized_url", .35))
             if parsed.scheme == "http":
                 signals.append(("unencrypted_transport", .15))

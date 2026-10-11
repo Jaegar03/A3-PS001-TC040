@@ -20,7 +20,13 @@ from sqlalchemy.orm import Session
 from app.api.deps import get_db, get_detector_registry
 from app.detectors.file.metadata import analyze_file
 from app.detectors.registry import DetectorRegistry
-from app.events.schema import AttachmentRef, EventContent, SecurityEvent, SecurityEventType, SourceType
+from app.events.schema import (
+    AttachmentRef,
+    EventContent,
+    SecurityEvent,
+    SecurityEventType,
+    SourceType,
+)
 from app.security.auth import require_scopes
 from app.security.uploads import (
     ArchiveBombSuspected,
@@ -54,7 +60,8 @@ async def _analyze_submission(*, text: str | None = None, url: str | None = None
                               event_type: SecurityEventType, db: Session,
                               registry: DetectorRegistry) -> dict:
     value = text if text is not None else url
-    assert value is not None
+    if value is None:  # defensive invariant; callers provide exactly one value
+        raise HTTPException(status_code=500, detail="Analysis value was not provided")
     metadata = {
         "analysis_sha256": hashlib.sha256(value.encode("utf-8")).hexdigest(),
         "analysis_length": len(value),

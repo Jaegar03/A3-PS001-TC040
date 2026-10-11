@@ -1,0 +1,17 @@
+# CPU-feasible research environment captured in research/ENVIRONMENT.md.
+# Runtime pins below match the audit environment on 2026-10-11.
+numpy==2.5.4
+pandas==2.3.3
+scikit-learn==1.9.1
+lightgbm==4.7.0
+scipy==1.18.1
+onnxruntime==1.31.0
+onnx==1.23.2
+skl2onnx==1.20.0
+pyyaml==6.0.3
+regex==2026.9.29
+
+# Optional only; do not install unless a measured experiment requires it.
+# torch==2.8.0
+# transformers==4.57.1
+# datasets==4.2.0

@@ -5,6 +5,7 @@ export type Severity = "SAFE" | "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 export type SourceType = "LIVE" | "SIMULATED" | "DEMO_DATA";
 export type AlertStatus = "OPEN" | "ACKNOWLEDGED" | "RESOLVED";
 export type RecommendedAction = "ALLOW" | "MONITOR" | "REVIEW" | "BLOCK";
+export type FindingStatus = "suspicious" | "no_finding_observed" | "partial_analysis" | "invalid_input" | "scanner_or_model_unavailable" | "timed_out" | "internal_error";
 
 export const SEVERITIES: Severity[] = ["SAFE", "LOW", "MEDIUM", "HIGH", "CRITICAL"];
 
@@ -30,6 +31,10 @@ export interface DetectionResult {
   confidence: number;
   evidence: Evidence[];
   recommended_action: RecommendedAction;
+  status?: FindingStatus;
+  rule_ids?: string[];
+  model_id?: string | null;
+  threshold?: number | null;
   model_version?: string | null;
   mitre_attack: MitreMapping[];
   generated_at: string;
@@ -42,6 +47,8 @@ export interface RiskAssessment {
   severity: Severity;
   classification: string;
   confidence: number;
+  analysis_status?: "complete" | "partial_analysis";
+  analysis_errors?: string[];
   findings: DetectionResult[];
   generated_at: string;
 }

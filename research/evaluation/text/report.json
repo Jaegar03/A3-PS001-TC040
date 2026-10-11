@@ -1,0 +1,179 @@
+{
+  "seed": 20261011,
+  "datasets": {
+    "deepset_train": {
+      "path": "deepset_prompt_injections\\train.jsonl",
+      "source": "https://huggingface.co/datasets/deepset/prompt-injections",
+      "license": "Apache-2.0",
+      "retrieved_at": "2026-10-11T10:20:20+00:00",
+      "sha256": "7f4d66af20299353ce4d766d65c917bf6df09888fd9e1fb3419a45e45dad9dc5",
+      "size_bytes": 79513
+    },
+    "deepset_test": {
+      "path": "deepset_prompt_injections\\test.jsonl",
+      "source": "https://huggingface.co/datasets/deepset/prompt-injections",
+      "license": "Apache-2.0",
+      "retrieved_at": "2026-10-11T10:20:21+00:00",
+      "sha256": "3def58281c3482e60bcba0d496f56d087bc8f02b99f0b3712794790d79dff953",
+      "size_bytes": 17663
+    },
+    "seclists_Generic-SQLi.txt": {
+      "path": "seclists_sqli\\Generic-SQLi.txt",
+      "source": "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/Databases/SQLi/Generic-SQLi.txt",
+      "license": "MIT",
+      "retrieved_at": "2026-10-11T10:20:21+00:00",
+      "sha256": "09e5930609e4ce0663505168432796881f493ec0e63643300166d36ed57d40ec",
+      "size_bytes": 5383
+    },
+    "seclists_Generic-BlindSQLi.fuzzdb.txt": {
+      "path": "seclists_sqli\\Generic-BlindSQLi.fuzzdb.txt",
+      "source": "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/Databases/SQLi/Generic-BlindSQLi.fuzzdb.txt",
+      "license": "MIT",
+      "retrieved_at": "2026-10-11T10:20:22+00:00",
+      "sha256": "22ba3d13dfb64307ecf34aa1c572840774ecd1f84fdd86b44998b0a16d76069a",
+      "size_bytes": 1189
+    },
+    "seclists_MySQL.fuzzdb.txt": {
+      "path": "seclists_sqli\\MySQL.fuzzdb.txt",
+      "source": "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/Databases/SQLi/MySQL.fuzzdb.txt",
+      "license": "MIT",
+      "retrieved_at": "2026-10-11T10:20:22+00:00",
+      "sha256": "f4aa035bf77a5faf6fb1f558a5043653ffbfa707ca05e433ccc42b6d1bc16c04",
+      "size_bytes": 108
+    },
+    "seclists_MSSQL.fuzzdb.txt": {
+      "path": "seclists_sqli\\MSSQL.fuzzdb.txt",
+      "source": "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/Databases/SQLi/MSSQL.fuzzdb.txt",
+      "license": "MIT",
+      "retrieved_at": "2026-10-11T10:20:22+00:00",
+      "sha256": "294c2b98fcb89c911c2d0bb33ce789a1cbd03b06c3c5876712f4d0ca70a3f709",
+      "size_bytes": 1058
+    },
+    "seclists_Oracle.fuzzdb.txt": {
+      "path": "seclists_sqli\\Oracle.fuzzdb.txt",
+      "source": "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/Databases/SQLi/Oracle.fuzzdb.txt",
+      "license": "MIT",
+      "retrieved_at": "2026-10-11T10:20:23+00:00",
+      "sha256": "5f0329bfa5aa8b7559841c6fd7b4ca36f8558750c958f07132b1844335a0b859",
+      "size_bytes": 7873
+    },
+    "seclists_MySQL-SQLi-Login-Bypass.fuzzdb.txt": {
+      "path": "seclists_sqli\\MySQL-SQLi-Login-Bypass.fuzzdb.txt",
+      "source": "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/Databases/SQLi/MySQL-SQLi-Login-Bypass.fuzzdb.txt",
+      "license": "MIT",
+      "retrieved_at": "2026-10-11T10:20:23+00:00",
+      "sha256": "d8c4b6064db3b477226cef44acf3ad325bb3ae7f372c21512bb73f66f2680308",
+      "size_bytes": 373
+    },
+    "seclists_SQLi-Polyglots.txt": {
+      "path": "seclists_sqli\\SQLi-Polyglots.txt",
+      "source": "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/Databases/SQLi/SQLi-Polyglots.txt",
+      "license": "MIT",
+      "retrieved_at": "2026-10-11T10:20:23+00:00",
+      "sha256": "098c986d85783cf01dfdcec6d4d2b839d234c36a1f2e0dc2a130d7b3de4ba9a3",
+      "size_bytes": 354
+    },
+    "seclists_quick-SQLi.txt": {
+      "path": "seclists_sqli\\quick-SQLi.txt",
+      "source": "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/Databases/SQLi/quick-SQLi.txt",
+      "license": "MIT",
+      "retrieved_at": "2026-10-11T10:20:24+00:00",
+      "sha256": "99301faba9413833c02cf9d74a5a32a06482aea5b373f8e843edbca3ca2b0b7e",
+      "size_bytes": 1180
+    },
+    "seclists_sqli.auth.bypass.txt": {
+      "path": "seclists_sqli\\sqli.auth.bypass.txt",
+      "source": "https://raw.githubusercontent.com/danielmiessler/SecLists/master/Fuzzing/Databases/SQLi/sqli.auth.bypass.txt",
+      "license": "MIT",
+      "retrieved_at": "2026-10-11T10:20:24+00:00",
+      "sha256": "07887121de5aeab2d5541c6b40142797addea4e1eaf808f43d236d3a7be2bc82",
+      "size_bytes": 1774
+    },
+    "phiusiil_csv": {
+      "path": "phiusiil\\PhiUSIIL_Phishing_URL_Dataset.csv",
+      "source": "https://archive.ics.uci.edu/static/public/967/phiusiil+phishing+url+dataset.zip",
+      "license": "CC BY 4.0",
+      "retrieved_at": "2026-10-11T10:20:48+00:00",
+      "sha256": "a236549cd369cd80bd478ff8e1779cbf44c58d5c3f79f7a51a1adbed7d06d1c6",
+      "size_bytes": 56854345
+    }
+  },
+  "notes": [
+    "No model artifacts are promoted by this evaluation script."
+  ],
+  "prompt_injection": {
+    "dataset": "deepset/prompt-injections",
+    "split": "publisher train/test; 80/20 validation slice from train, seed 20261011",
+    "rules": {
+      "precision": 1.0,
+      "recall": 0.0667,
+      "f1": 0.125,
+      "fpr": 0.0,
+      "pr_auc": 0.5494,
+      "confusion_matrix": {
+        "tn": 56,
+        "fp": 0,
+        "fn": 56,
+        "tp": 4
+      },
+      "threshold": null
+    },
+    "linear_tfidf": {
+      "precision": 1.0,
+      "recall": 0.0167,
+      "f1": 0.0328,
+      "fpr": 0.0,
+      "pr_auc": 0.9706,
+      "confusion_matrix": {
+        "tn": 56,
+        "fp": 0,
+        "fn": 59,
+        "tp": 1
+      },
+      "threshold": 0.8944679966263093
+    },
+    "rule_latency_p50_ms": 0.3066,
+    "limitations": [
+      "Small publisher dataset; paraphrase/source leakage cannot be ruled out from the published files.",
+      "Rules and model scores are triage signals, not authorization decisions."
+    ]
+  },
+  "sql_injection": {
+    "dataset": "SecLists SQLi payload lists plus authored benign controls",
+    "split": "one source file held out; negatives authored locally; seed 20261011",
+    "rules": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "fpr": 0.0,
+      "pr_auc": 1.0,
+      "confusion_matrix": {
+        "tn": 40,
+        "fp": 0,
+        "fn": 0,
+        "tp": 96
+      },
+      "threshold": null
+    },
+    "linear_tfidf": {
+      "precision": 1.0,
+      "recall": 0.0938,
+      "f1": 0.1714,
+      "fpr": 0.0,
+      "pr_auc": 1.0,
+      "confusion_matrix": {
+        "tn": 40,
+        "fp": 0,
+        "fn": 87,
+        "tp": 9
+      },
+      "threshold": 0.978928497742816
+    },
+    "rule_latency_p50_ms": 0.1382,
+    "limitations": [
+      "Positive source lists are attack-only and not representative of production traffic.",
+      "No classifier is promoted without a stronger grouped benchmark and license review."
+    ]
+  },
+  "generated_at": "2026-10-11T10:28:04Z"
+}

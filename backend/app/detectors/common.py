@@ -9,6 +9,7 @@ from typing import Any
 from app.schemas.detection import (
     DetectionResult,
     DetectorCategory,
+    FindingStatus,
     RecommendedAction,
     Severity,
 )
@@ -89,5 +90,6 @@ def safe_result(
         confidence=confidence,
         evidence=[],
         recommended_action=RecommendedAction.ALLOW,
+        status=FindingStatus.NO_FINDING_OBSERVED,
         model_version=model_version,
     )

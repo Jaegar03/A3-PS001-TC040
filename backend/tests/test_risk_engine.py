@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from app.risk.engine import RiskEngine
 from app.schemas.detection import (
+    AnalysisStatus,
     DetectionResult,
     DetectorCategory,
     Evidence,
@@ -64,6 +65,15 @@ def test_corroboration_across_categories_boosts_score_above_single_detector():
     assert corroborated.risk_score > single.risk_score
 
 
+def test_duplicate_findings_in_one_category_do_not_add_corroboration():
+    engine = RiskEngine()
+    one = _finding(DetectorCategory.SQL_INJECTION, Severity.HIGH, score=0.8, confidence=0.8)
+    duplicate = _finding(DetectorCategory.SQL_INJECTION, Severity.HIGH, score=0.7, confidence=0.9)
+    single = engine.assess("evt-duplicate-one", [one])
+    repeated = engine.assess("evt-duplicate-two", [one, duplicate])
+    assert repeated.risk_score == single.risk_score
+
+
 def test_risk_assessment_never_claims_calibrated_probability():
     engine = RiskEngine()
     assessment = engine.assess("evt-5", [_finding(DetectorCategory.SQL_INJECTION, Severity.HIGH, 0.8, 0.8)])
@@ -83,3 +93,14 @@ def test_evidence_required_above_low_severity_is_enforced_by_schema():
             evidence=[],  # invalid: HIGH severity requires evidence
             recommended_action=RecommendedAction.BLOCK,
         )
+
+
+def test_safe_result_has_observed_no_finding_status_not_suspicious():
+    finding = _finding(DetectorCategory.PHISHING, Severity.SAFE, score=0.0, confidence=0.0)
+    assert finding.status.value == "no_finding_observed"
+
+
+def test_assessment_defaults_to_complete_analysis():
+    assessment = RiskEngine().assess("evt-complete", [])
+    assert assessment.analysis_status == AnalysisStatus.COMPLETE
+    assert assessment.analysis_errors == []

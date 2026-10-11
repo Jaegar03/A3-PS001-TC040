@@ -41,8 +41,6 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import RobustScaler
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import MODELS_DIR, environment, write_model, write_report
-
 from app.demo.network_flows import CATEGORIES, ScenarioConfig, generate
 from app.detectors.network import batch_rules
 from app.detectors.network.features import FEATURE_NAMES, feature_matrix
@@ -60,6 +58,7 @@ from app.ml.metrics import (
     latency_ms,
     threshold_for_max_fpr,
 )
+from common import MODELS_DIR, environment, write_model, write_report
 
 VERSION = "0.1.0"
 ALPHA = 0.01            # unsupervised layers fire at p <= 1% vs benign calibration traffic

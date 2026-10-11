@@ -13,9 +13,9 @@ Every number in this document comes from `research/evaluation/<domain>/report.js
 | Network: supervised classifier | `models/network/classifier/` | Trained, v0.1.0 | Synthetic flows (demo data) |
 | Endpoint fleet baseline (for host rules; not an ML model) | `models/endpoint/fleet_baseline/` | Learned, v0.1.0 | Simulated endpoint fleet (benign only) |
 | Endpoint behavioral Isolation Forest | — | **Not implemented** in this version | — |
-| Phishing URL model | `models/phishing/url_model/` | **Not trained** | Dataset downloaded (PhiUSIIL, CC BY 4.0); see its dataset notes below |
-| Prompt injection classifier | `models/prompt/prompt_injection/` | **Not trained** | Dataset downloaded (deepset/prompt-injections, Apache-2.0) |
-| SQL injection classifier | `models/sql_injection/classifier/` | **Not trained** | SecLists SQLi lists downloaded (MIT) as positives; no benign corpus chosen yet |
+| Phishing URL model | `models/phishing/url_model/` | **Not trained** | Dataset downloaded (PhiUSIIL, CC BY 4.0); URL rules remain local-only |
+| Prompt injection classifier | `models/prompt/prompt_injection/` | **Not trained** | Dataset downloaded (deepset/prompt-injections, Apache-2.0); heuristic detector remains active |
+| SQL injection classifier | `models/sql_injection/classifier/` | **Not trained** | SecLists SQLi lists downloaded (MIT); rule/lexical detector remains active |
 | Malware static model (EMBER-style) | `models/malware/ember/` | **Not trained** | No dataset pulled. The EMBER reference repo named in the brief doesn't exist (see repository-analysis.md) |
 
 `GET /api/v1/models` reports the same status, read live from each directory's `metadata.json`.
@@ -133,7 +133,7 @@ Bootstrap 95% intervals for the fused models (1,000 resamples):
 - **The Isolation Forest is weak here** (recall 0.10). Benign DNS flows are as tiny as scan probes, so tree isolation doesn't separate them. Its hyperparameters were fixed before training and were not tuned after seeing this result, because tuning on TEST would be leakage. This is the clearest example in the table of why no single layer decides.
 - **The classifier's 1.00 on held-out beaconing is a generator artifact, not generalization.** In this synthetic data, beacons have small responses, like several categories the classifier did see. Real beacons resemble ordinary small HTTPS requests.
 - **The fused models miss beaconing and a third of DNS tunnelling.** A single beacon flow looks normal, and per-flow features carry no query-name information. The behavior rules catch both, and that is the reason the rules layer exists.
-- **All results come from synthetic data.** Real-traffic performance is unknown until the models are trained and evaluated on a real dataset. The flow parser already reads CICFlowMeter/CIC-IDS2017 CSVs, but the training script can't yet train from them. The plan is to use Monday traffic as the benign baseline, following the leakage-control pattern in [repository-analysis.md](repository-analysis.md) §1.
+- **All committed results come from synthetic data.** Real-traffic performance is unknown. The flow parser reads CICFlowMeter/CIC-IDS2017-shaped CSVs, but no public network dataset has been evaluated in this audit branch yet. The public-data plan and blocker are in `research/network-evaluation/EXPERIMENT_PLAN.md` and `docs/OPEN_QUESTIONS.md`.
 
 ### Retraining
 

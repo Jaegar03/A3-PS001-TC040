@@ -11,7 +11,14 @@ import logging
 
 from app.core.rules import RuleTimeout, compile_pattern_rules, load_yaml, rules_path
 from app.detectors.base import AvailabilityStatus, BaseDetector, DetectorAvailability
-from app.detectors.common import action_for, bounded_text, event_text, noisy_or, safe_result, severity_from_score
+from app.detectors.common import (
+    action_for,
+    bounded_text,
+    event_text,
+    noisy_or,
+    safe_result,
+    severity_from_score,
+)
 from app.detectors.sqli.lexer import analyze as lexical_analyze
 from app.detectors.sqli.normalizer import build_sqli_views
 from app.events.schema import SecurityEvent, SecurityEventType

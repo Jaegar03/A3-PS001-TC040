@@ -1,0 +1,18 @@
+{
+  "generated_at": "2026-10-11T10:44:47.771322+00:00",
+  "results": [
+    {
+      "label": "network-synthetic",
+      "command": [
+        "D:\\Sentivra\\backend\\.venv-audit\\Scripts\\python.exe",
+        "research/experiments/train_network_models.py"
+      ],
+      "returncode": 0
+    },
+    {
+      "label": "public-network-data",
+      "available": false,
+      "status": "blocked_pending_download_and_checksum"
+    }
+  ]
+}
