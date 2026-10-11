@@ -233,8 +233,8 @@ def test_telegram_message_is_normalized_stored_and_redacted(app_client, monkeypa
     assert resp.status_code == 200
     body = resp.json()
     assert body["accepted"] == 1 and body["duplicates"] == 0 and body["event_ids"]
-    # Honest about coverage: no detector in this build reads message content.
-    assert body["detectors"] == [] and "Phase 4" in body["note"]
+    # Message content is analyzed in memory, while the persisted event remains redacted.
+    assert {"PromptInjectionDetector", "URLDetector"} <= set(body["detectors"])
 
     stored = app_client.get(f"/api/v1/events/{body['event_ids'][0]}").json()
     assert stored["event_type"] == "telegram_message" and stored["source_type"] == "LIVE"

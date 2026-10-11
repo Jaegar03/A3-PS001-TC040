@@ -43,12 +43,6 @@ logger = logging.getLogger("sentivra.webhooks")
 
 router = APIRouter(prefix="/api/v1/integrations", tags=["webhooks"])
 
-NO_COVERAGE_NOTE = (
-    "No detector in this build analyzes message content yet (the phishing, URL and prompt-injection "
-    "detectors are Phase 4), so no detection verdict was produced — the event was stored as-is."
-)
-
-
 async def _ingest(provider: str, outcome: WebhookOutcome, *, db: Session,
                   registry: DetectorRegistry) -> dict:
     repo = EventRepository(db)
@@ -67,7 +61,7 @@ async def _ingest(provider: str, outcome: WebhookOutcome, *, db: Session,
         event_ids.append(event.event_id)
         accepted += 1
 
-    notes = [n for n in (outcome.note, NO_COVERAGE_NOTE if outcome.events and not detectors else None) if n]
+    notes = [outcome.note] if outcome.note else []
     logger.info("webhook %s: accepted=%d duplicates=%d ignored=%d",
                 provider, accepted, duplicates, outcome.ignored)
     return {

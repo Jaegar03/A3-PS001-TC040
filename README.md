@@ -15,7 +15,7 @@ Built in phases (see [docs/architecture.md](docs/architecture.md) § Implementat
 | 1 | Repository analysis, architecture, threat model | ✅ Done |
 | 2 | Core contracts — `SecurityEvent`, `DetectionResult`, `BaseDetector`, `ModelRegistry`, `RiskEngine` | ✅ Done |
 | 3 | File detection — hashing, magic bytes, entropy, YARA, ClamAV | ✅ Done |
-| 4 | SQL injection, phishing/URL, prompt injection detectors | 🔄 Groundwork only: rule packs, Unicode/decoding layers, SQL lexer, pickle-free model format, datasets fetched. Detectors not wired yet |
+| 4 | SQL injection, phishing/URL, prompt injection detectors | ✅ Done: bounded, explainable rule/heuristic detectors, redacted persistence, direct-analysis API and dashboard workflows. URL analysis is local-only; optional URL/prompt/SQL ML artifacts remain untrained |
 | 5 | Network anomaly detection: behavior rules, statistical, Isolation Forest, autoencoder, classifier; CSV/PCAP upload | ✅ Done. Models trained on **synthetic** data; see [docs/model-card.md](docs/model-card.md) |
 | 6 | Endpoint telemetry: osquery pack + normalizer, simulator, Sigma engine, host behavior rules, auth/log rules, Wazuh alert ingestion | ✅ Done, rules only: no endpoint ML model in this version. See [endpoint-agent/README.md](endpoint-agent/README.md) |
 | 7 | Gmail / Telegram / WhatsApp Business connectors | ✅ Done: three webhook endpoints, provider-verified (Google push JWT, Telegram `secret_token`, Meta HMAC-SHA256), normalized into the shared pipeline. See [docs/api.md](docs/api.md#webhooks) and [docs/privacy.md](docs/privacy.md) |
@@ -23,6 +23,24 @@ Built in phases (see [docs/architecture.md](docs/architecture.md) § Implementat
 | 9 | Next.js SOC dashboard | ✅ Done: 14 pages, light and dark; see [frontend/README.md](frontend/README.md) |
 | 10 | Security hardening | ✅ OAuth2 client-credentials with per-route scopes, dashboard sign-in, request-body limits, token-endpoint rate limit, strict response headers and a dashboard CSP. See [docs/api.md](docs/api.md#authentication) and the known gaps in [docs/threat-model.md](docs/threat-model.md) |
 | 11 | Future deployment and automation design | ✅ Documentation only, as the brief requires: [docs/future-deployment.md](docs/future-deployment.md) (what already carries over, what must change first, staged container architecture) and [docs/future-automation.md](docs/future-automation.md) (policy engine → human approval → executor contracts and guardrails). No Dockerfile, compose file, manifest or automation code |
+
+### Implemented detection coverage
+
+The current build exposes these working detection paths in the API and dashboard:
+
+| Capability | Status | Operator entry point |
+|---|---|---|
+| File and malware analysis | ✅ Implemented | **Files**, `/api/v1/analyze/file` |
+| Network anomaly analysis | ✅ Implemented | **Network**, `/api/v1/network/analyze` |
+| Endpoint and log analysis | ✅ Implemented | **Endpoint**, `/api/v1/endpoint/*`, `/api/v1/logs/analyze` |
+| Prompt-injection analysis | ✅ Implemented | **Prompt Security**, `/api/v1/analyze/prompt` |
+| Suspicious URL analysis | ✅ Implemented | **Messages**, `/api/v1/analyze/url` |
+| SQL/NoSQL injection analysis | ✅ Implemented | **Messages**, `/api/v1/analyze/sql` |
+| Gmail, Telegram, WhatsApp ingestion | ✅ Implemented | **Messages**, provider-authenticated webhooks |
+| Automated containment/remediation | ⏳ Not implemented | Approval-gated automation remains design-only |
+| Native endpoint agent | ⏳ Not implemented | Use osquery/Wazuh ingestion in this build |
+
+The dashboard’s Overview cards count alerts for all implemented detection domains. A value of `0` means the capability is available but no alert was raised in the selected time window; it does not mean the detector is missing. The **Models** page is narrower: it reports optional trained model artifacts only. “Not trained” there does not contradict an implemented rule/heuristic detector; it means no trained ML artifact is being claimed.
 
 ## Quick start
 
@@ -93,7 +111,7 @@ curl -s -X POST http://localhost:8000/api/v1/integrations/telegram/webhook \
 curl -H "$AUTH" http://localhost:8000/api/v1/events
 ```
 
-A forged secret gets `403`, an unconfigured connector gets `503`, and the response says which detectors ran (`[]` today — the message-content detectors are Phase 4, and the note says so rather than implying a clean verdict). Connecting the real providers: [docs/api.md § Webhooks](docs/api.md#webhooks).
+A forged secret gets `403`, an unconfigured connector gets `503`, and the response says which detectors ran. Message bodies are analyzed in memory and stored redacted. Connecting the real providers: [docs/api.md § Webhooks](docs/api.md#webhooks).
 
 ## Try the network detector
 
@@ -140,7 +158,7 @@ Open **Demo mode** in the sidebar and choose *Run all scenarios* to see the whol
 - [docs/repository-analysis.md](docs/repository-analysis.md) — survey of every reference repository named in the project brief, with license/maintenance/decision per repo
 - [docs/architecture.md](docs/architecture.md) — system design, data flow, detector matrix, model registry
 - [docs/threat-model.md](docs/threat-model.md) — STRIDE analysis of Sentivra itself, plus stated per-detector limitations
-- [docs/api.md](docs/api.md) — authentication and scopes, request limits, every endpoint (including the ones that answer 501), and the [webhook connectors](docs/api.md#webhooks) with their setup steps
+- [docs/api.md](docs/api.md) — authentication and scopes, request limits, analysis endpoints, and the [webhook connectors](docs/api.md#webhooks) with their setup steps
 - [docs/model-card.md](docs/model-card.md) — every model's data, splits, metrics, evaluation date and limitations
 - [endpoint-agent/README.md](endpoint-agent/README.md) — osquery pack deployment, Wazuh ingestion, future native agent
 - [docs/future-deployment.md](docs/future-deployment.md) — staged container/cloud architecture, the code changes each stage needs, and the security requirements that carry over (design only)

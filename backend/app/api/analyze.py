@@ -11,13 +11,16 @@ features" principle applied to API surface, not just detection results).
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, UploadFile
+import hashlib
+from typing import Any
+
+from fastapi import APIRouter, Body, Depends, HTTPException, UploadFile
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_detector_registry
 from app.detectors.file.metadata import analyze_file
 from app.detectors.registry import DetectorRegistry
-from app.events.schema import AttachmentRef, SecurityEvent, SecurityEventType, SourceType
+from app.events.schema import AttachmentRef, EventContent, SecurityEvent, SecurityEventType, SourceType
 from app.security.auth import require_scopes
 from app.security.uploads import (
     ArchiveBombSuspected,
@@ -30,11 +33,51 @@ from app.services.pipeline import run_pipeline
 
 router = APIRouter(prefix="/api/v1/analyze", tags=["analyze"], dependencies=[Depends(require_scopes("analyze"))])
 
-_NOT_YET_IMPLEMENTED = (
-    "This endpoint is defined by the SENTIVRA API contract (docs/api.md) but its "
-    "detector has not landed yet in this phased build — see docs/architecture.md "
-    "§ Implementation Order. Returning 501 rather than a fake result."
-)
+_MAX_TEXT = 100_000
+_MAX_URL = 2_048
+
+
+def _string_field(payload: Any, field: str, maximum: int) -> str:
+    """Validate without letting FastAPI/Pydantic echo attacker input."""
+    if not isinstance(payload, dict):
+        raise HTTPException(status_code=422, detail="Request body must be a JSON object")
+    value = payload.get(field)
+    if not isinstance(value, str) or not value.strip():
+        raise HTTPException(status_code=422, detail=f"{field} must be a non-empty string")
+    value = value.strip()
+    if len(value) > maximum:
+        raise HTTPException(status_code=422, detail=f"{field} exceeds the maximum length of {maximum} characters")
+    return value
+
+
+async def _analyze_submission(*, text: str | None = None, url: str | None = None,
+                              event_type: SecurityEventType, db: Session,
+                              registry: DetectorRegistry) -> dict:
+    value = text if text is not None else url
+    assert value is not None
+    metadata = {
+        "analysis_sha256": hashlib.sha256(value.encode("utf-8")).hexdigest(),
+        "analysis_length": len(value),
+        "analysis_kind": "url" if url is not None else "text",
+    }
+    if url is not None:
+        metadata["limitation"] = "URL parsed heuristically; no remote fetch, redirect following, or DNS resolution"
+    analyzed = SecurityEvent(
+        event_type=event_type, source="api", source_type=SourceType.LIVE,
+        content=EventContent(body=text, urls=[url] if url is not None else []),
+        metadata={**metadata, "analysis_text": text or "", "analysis_url": url or ""},
+    )
+    # Never persist the submitted body or URL; detectors still receive it in memory.
+    persisted = analyzed.model_copy(update={"content": None, "metadata": metadata})
+    findings, assessment = await run_pipeline(analyzed, db=db, registry=registry, persist=persisted)
+    result = {
+        "event_id": analyzed.event_id, "source_type": analyzed.source_type.value,
+        "findings": [f.model_dump(mode="json") for f in findings],
+        "risk_assessment": assessment.model_dump(mode="json"),
+    }
+    if url is not None:
+        result["limitations"] = [metadata["limitation"]]
+    return result
 
 
 @router.post("/file")
@@ -95,20 +138,20 @@ async def analyze_file_endpoint(
 
 
 @router.post("/text")
-async def analyze_text_endpoint() -> None:
-    raise HTTPException(status_code=501, detail=_NOT_YET_IMPLEMENTED)
+async def analyze_text_endpoint(payload: dict = Body(...), db: Session = Depends(get_db), registry: DetectorRegistry = Depends(get_detector_registry)) -> dict:
+    return await _analyze_submission(text=_string_field(payload, "text", _MAX_TEXT), event_type=SecurityEventType.TEXT_ANALYSIS, db=db, registry=registry)
 
 
 @router.post("/url")
-async def analyze_url_endpoint() -> None:
-    raise HTTPException(status_code=501, detail=_NOT_YET_IMPLEMENTED)
+async def analyze_url_endpoint(payload: dict = Body(...), db: Session = Depends(get_db), registry: DetectorRegistry = Depends(get_detector_registry)) -> dict:
+    return await _analyze_submission(url=_string_field(payload, "url", _MAX_URL), event_type=SecurityEventType.URL_ANALYSIS, db=db, registry=registry)
 
 
 @router.post("/prompt")
-async def analyze_prompt_endpoint() -> None:
-    raise HTTPException(status_code=501, detail=_NOT_YET_IMPLEMENTED)
+async def analyze_prompt_endpoint(payload: dict = Body(...), db: Session = Depends(get_db), registry: DetectorRegistry = Depends(get_detector_registry)) -> dict:
+    return await _analyze_submission(text=_string_field(payload, "prompt", _MAX_TEXT), event_type=SecurityEventType.PROMPT_ANALYSIS, db=db, registry=registry)
 
 
 @router.post("/sql")
-async def analyze_sql_endpoint() -> None:
-    raise HTTPException(status_code=501, detail=_NOT_YET_IMPLEMENTED)
+async def analyze_sql_endpoint(payload: dict = Body(...), db: Session = Depends(get_db), registry: DetectorRegistry = Depends(get_detector_registry)) -> dict:
+    return await _analyze_submission(text=_string_field(payload, "sql", _MAX_TEXT), event_type=SecurityEventType.SQL_ANALYSIS, db=db, registry=registry)

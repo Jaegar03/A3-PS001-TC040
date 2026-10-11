@@ -1,9 +1,11 @@
 "use client";
 
 import { SourceTypeBadge, StatusPill } from "@/components/sentivra/badges";
+import { AnalysisForm, useAnalysis } from "@/components/sentivra/analysis-result";
 import { EmptyState, ErrorState, LoadingBlock, PageHeader } from "@/components/sentivra/states";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useApi } from "@/hooks/use-api";
+import { api } from "@/lib/api";
 import { dateTime, relative } from "@/lib/format";
 import type { Integration, SecurityEvent } from "@/types/api";
 
@@ -69,6 +71,8 @@ function MessageCard({ event }: { event: MessageEvent }) {
 }
 
 export default function MessagesPage() {
+  const urlAnalysis = useAnalysis();
+  const sqlAnalysis = useAnalysis();
   const integrations = useApi<Integration[]>("/api/v1/integrations");
   const events = useApi<SecurityEvent[]>("/api/v1/events?limit=200");
 
@@ -99,6 +103,14 @@ export default function MessagesPage() {
       </Card>
 
       <Card>
+        <CardHeader><CardTitle>Analyze content safely</CardTitle></CardHeader>
+        <CardContent className="grid gap-6 md:grid-cols-2">
+          <AnalysisForm label="Analyze URL" placeholder="Paste a URL (it is parsed only; never fetched)…" onSubmit={(value) => urlAnalysis.run("url", () => api.analyzeUrl(value))} result={urlAnalysis.result} error={urlAnalysis.error} busy={urlAnalysis.busy !== null} />
+          <AnalysisForm label="Analyze SQL" placeholder="Paste a query to check for injection signals…" onSubmit={(value) => sqlAnalysis.run("sql", () => api.analyzeSql(value))} result={sqlAnalysis.result} error={sqlAnalysis.error} busy={sqlAnalysis.busy !== null} />
+        </CardContent>
+      </Card>
+
+      <Card>
         <CardHeader><CardTitle>Delivered messages</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           {events.error ? <ErrorState error={events.error} /> : null}
@@ -114,8 +126,8 @@ export default function MessagesPage() {
             <MessageCard key={m.event_id} event={m} />
           ))}
           <p className="text-xs text-muted-foreground">
-            No detector in this build analyzes message content yet (phishing, URL and prompt injection are Phase 4),
-            so an arriving message is stored and labeled, not judged. This page never reports a message as clean.
+            Connector-delivered bodies remain redacted in storage. Use the forms above for direct URL and SQL checks;
+            URL analysis never fetches the submitted address.
           </p>
         </CardContent>
       </Card>

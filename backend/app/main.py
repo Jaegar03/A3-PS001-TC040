@@ -39,8 +39,11 @@ from app.detectors.log_detector import LogDetector
 from app.detectors.malware_detector import MalwareDetector
 from app.detectors.network.suite import get_suite
 from app.detectors.network_anomaly_detector import NetworkAnomalyDetector
+from app.detectors.prompt_detector import PromptInjectionDetector
 from app.detectors.registry import registry as detector_registry
+from app.detectors.sqli_detector import SQLInjectionDetector
 from app.detectors.sigma_detector import SigmaDetector
+from app.detectors.url_detector import URLDetector
 from app.detectors.yara_detector import YaraDetector
 from app.security.auth import load_clients, signing_key
 from app.security.body_limit import BodySizeLimitMiddleware
@@ -61,7 +64,8 @@ def _register_detectors() -> None:
     # than once, and re-registering must not raise.
     detector_registry.clear()
     for detector in (MalwareDetector(), YaraDetector(), ClamAVDetector(), NetworkAnomalyDetector(),
-                     SigmaDetector(), LogDetector(), BehavioralAnomalyDetector()):
+                     SigmaDetector(), LogDetector(), BehavioralAnomalyDetector(),
+                     SQLInjectionDetector(), PromptInjectionDetector(), URLDetector()):
         detector_registry.register(detector)
     # Load (and SHA-256-verify) the network models now rather than on the
     # first request, so /health reports their real state immediately.

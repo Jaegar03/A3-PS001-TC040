@@ -30,11 +30,13 @@ router = APIRouter(prefix="/api/v1", tags=["system"], dependencies=[Depends(requ
 SCORE_PENALTIES = {"CRITICAL": 25, "HIGH": 10, "MEDIUM": 4, "LOW": 1}
 SEVERITY_ORDER = ("SAFE", "LOW", "MEDIUM", "HIGH", "CRITICAL")
 # Detection domains shown on the dashboard, by the detectors that serve them.
-# Domains whose detectors don't exist yet (URLs, prompts) are absent, not zero.
 DOMAINS = {
     "network": {"NetworkAnomalyDetector"},
     "files": {"MalwareDetector", "YaraDetector", "ClamAVDetector"},
     "endpoint": {"BehavioralAnomalyDetector", "SigmaDetector", "LogDetector"},
+    "urls": {"URLDetector"},
+    "prompts": {"PromptInjectionDetector"},
+    "sql": {"SQLInjectionDetector"},
 }
 
 
