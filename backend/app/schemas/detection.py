@@ -35,6 +35,27 @@ class RecommendedAction(StrEnum):
     BLOCK = "BLOCK"
 
 
+class FindingStatus(StrEnum):
+    """Operational state of a detector result, distinct from severity.
+
+    SAFE is intentionally not a status: a detector may have observed no
+    finding, or it may have been unable to analyze the input.
+    """
+
+    SUSPICIOUS = "suspicious"
+    NO_FINDING_OBSERVED = "no_finding_observed"
+    PARTIAL_ANALYSIS = "partial_analysis"
+    INVALID_INPUT = "invalid_input"
+    SCANNER_OR_MODEL_UNAVAILABLE = "scanner_or_model_unavailable"
+    TIMED_OUT = "timed_out"
+    INTERNAL_ERROR = "internal_error"
+
+
+class AnalysisStatus(StrEnum):
+    COMPLETE = "complete"
+    PARTIAL_ANALYSIS = "partial_analysis"
+
+
 class DetectorCategory(StrEnum):
     NETWORK_ANOMALY = "network_anomaly"
     PROMPT_INJECTION = "prompt_injection"
@@ -72,12 +93,22 @@ class DetectionResult(BaseModel):
     confidence: float = Field(ge=0.0, le=1.0)
     evidence: list[Evidence] = Field(default_factory=list)
     recommended_action: RecommendedAction
+    status: FindingStatus = FindingStatus.NO_FINDING_OBSERVED
+    rule_ids: list[str] = Field(default_factory=list)
+    model_id: str | None = None
+    threshold: float | None = None
+    input_context: str | None = None
     model_version: str | None = None
     mitre_attack: list[MitreAttackMapping] = Field(default_factory=list)
     generated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     @model_validator(mode="after")
     def _evidence_required_above_low(self) -> DetectionResult:
+        if self.severity == Severity.SAFE:
+            if self.status == FindingStatus.SUSPICIOUS:
+                self.status = FindingStatus.NO_FINDING_OBSERVED
+        elif self.status == FindingStatus.NO_FINDING_OBSERVED:
+            self.status = FindingStatus.SUSPICIOUS
         if self.severity.rank > Severity.LOW.rank and not self.evidence:
             raise ValueError(
                 f"{self.detector}: severity={self.severity} requires non-empty evidence"
@@ -92,6 +123,8 @@ class RiskAssessment(BaseModel):
     severity: Severity
     classification: str
     confidence: float = Field(ge=0.0, le=1.0)
+    analysis_status: AnalysisStatus = AnalysisStatus.COMPLETE
+    analysis_errors: list[str] = Field(default_factory=list)
     findings: list[DetectionResult] = Field(default_factory=list)
     generated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
 

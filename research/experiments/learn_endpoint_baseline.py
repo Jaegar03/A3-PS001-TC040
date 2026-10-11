@@ -24,8 +24,6 @@ from collections import Counter, defaultdict
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from common import MODELS_DIR, environment, write_model, write_report
-
 from app.demo.endpoint_sim import SCENARIOS, FleetConfig, simulate
 from app.detectors.endpoint import host_rules
 from app.detectors.endpoint.activity import Baseline, summarize
@@ -33,6 +31,7 @@ from app.detectors.logs import auth_rules
 from app.detectors.sigma_detector import SigmaDetector
 from app.events.osquery import normalize
 from app.events.schema import SourceType
+from common import MODELS_DIR, environment, write_model, write_report
 
 VERSION = "0.1.0"
 BASELINE_FLEET = {"windows_hosts": 40, "linux_hosts": 8, "hours": 8.0, "seed": 401}

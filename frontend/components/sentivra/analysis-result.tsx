@@ -79,6 +79,11 @@ export function AnalysisSummary({ result, extra }: { result: AnalysisResponse; e
         <SeverityBadge severity={assessment.severity} />
         <span className="text-sm tabular">Risk {assessment.risk_score} / 100</span>
         <SourceTypeBadge sourceType={result.source_type} />
+        {assessment.analysis_status === "partial_analysis" ? (
+          <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
+            Partial analysis — {assessment.analysis_errors?.join("; ") || "one or more detectors were unavailable"}
+          </span>
+        ) : null}
         {assessment.severity !== "SAFE" ? (
           <Link href={`/threats/${assessment.assessment_id}`} className="ml-auto text-sm underline underline-offset-4">
             Open alert

@@ -195,14 +195,14 @@ The 200 body is:
   "provider": "telegram",
   "accepted": 1, "duplicates": 0, "ignored": 0,
   "event_ids": ["…"],
-  "detectors": [],
-  "note": "No detector in this build analyzes message content yet …"
+  "detectors": ["PromptInjectionDetector", "URLDetector"],
+  "note": null
 }
 ```
 
 - **`duplicates`** — the event id is derived from the provider's own message id, so a redelivery is recognized and counted, never analyzed twice (no second alert).
 - **`ignored`** — valid traffic with nothing to analyze: delivery/read receipts, Telegram updates that aren't messages.
-- **`detectors`** — which detectors actually ran on the event. Webhook message content is analyzed in memory; stored message bodies remain redacted.
+- **`detectors`** — which detectors actually ran on the event. Webhook message content is analyzed in memory; stored message bodies remain redacted. A detector's operational status is separate from severity; a missing scanner is not represented as a clean finding.
 - Findings are **never echoed back to the provider** — they stay in the alerts/audit APIs.
 - Bodies are analyzed in memory and stored as SHA-256 + size, never as text; see [docs/privacy.md](privacy.md).
 

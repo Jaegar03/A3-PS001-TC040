@@ -16,7 +16,7 @@ from app.audit import service as audit_service
 from app.detectors.registry import DetectorRegistry
 from app.events.schema import SecurityEvent
 from app.risk.engine import RiskEngine
-from app.schemas.detection import DetectionResult, RiskAssessment
+from app.schemas.detection import AnalysisStatus, DetectionResult, FindingStatus, RiskAssessment
 from app.security.auth import current_actor
 from app.services.alert_repository import AlertRepository
 from app.services.event_repository import EventRepository
@@ -45,17 +45,37 @@ async def run_pipeline(
     """
     detectors = registry.applicable_to(event)
 
-    async def _run_one(detector) -> DetectionResult | None:
+    async def _run_one(detector) -> tuple[DetectionResult | None, str | None]:
         try:
-            return await detector.analyze(event)
+            return await detector.analyze(event), None
+        except TimeoutError:
+            logger.exception("Detector %s timed out on event %s", detector.name, event.event_id)
+            return None, f"{detector.name}: timed_out"
         except Exception:
             logger.exception("Detector %s failed on event %s", detector.name, event.event_id)
-            return None
+            return None, f"{detector.name}: internal_error"
 
     results = await asyncio.gather(*(_run_one(d) for d in detectors))
-    findings = [r for r in results if r is not None and r.severity.value != "SAFE"]
+    raw_results = [r for r, _ in results if r is not None]
+    errors = [error for _, error in results if error]
+    findings = [r for r in raw_results if r.severity.value != "SAFE"]
+
+    degraded_statuses = {
+        FindingStatus.PARTIAL_ANALYSIS,
+        FindingStatus.INVALID_INPUT,
+        FindingStatus.SCANNER_OR_MODEL_UNAVAILABLE,
+        FindingStatus.TIMED_OUT,
+        FindingStatus.INTERNAL_ERROR,
+    }
+    if any(r.status in degraded_statuses for r in raw_results):
+        errors.extend(f"{r.detector}: {r.status.value}" for r in raw_results if r.status in degraded_statuses)
 
     assessment = _risk_engine.assess(event.event_id, findings)
+    if errors:
+        assessment = assessment.model_copy(update={
+            "analysis_status": AnalysisStatus.PARTIAL_ANALYSIS,
+            "analysis_errors": sorted(set(errors)),
+        })
 
     EventRepository(db).create_if_absent(persist or event)
     if assessment.severity.rank > 0:  # only persist an alert when there's something to alert on

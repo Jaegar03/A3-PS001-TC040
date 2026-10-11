@@ -22,6 +22,7 @@ from app.schemas.detection import (
     DetectionResult,
     DetectorCategory,
     Evidence,
+    FindingStatus,
     RecommendedAction,
     Severity,
 )
@@ -112,6 +113,7 @@ class ClamAVDetector(BaseDetector):
             confidence=0.0,
             evidence=[],
             recommended_action=RecommendedAction.ALLOW,
+            status=FindingStatus.SCANNER_OR_MODEL_UNAVAILABLE,
             model_version=None,
         )
         if data is None:
@@ -131,6 +133,7 @@ class ClamAVDetector(BaseDetector):
                 confidence=0.95,
                 evidence=[],
                 recommended_action=RecommendedAction.ALLOW,
+                status=FindingStatus.NO_FINDING_OBSERVED,
                 model_version="clamav-signatures",
             )
 
@@ -143,5 +146,6 @@ class ClamAVDetector(BaseDetector):
             confidence=0.95,
             evidence=[Evidence(type="clamav_signature", detail=f"ClamAV signature match: {signature_name}")],
             recommended_action=RecommendedAction.BLOCK,
+            status=FindingStatus.SUSPICIOUS,
             model_version="clamav-signatures",
         )

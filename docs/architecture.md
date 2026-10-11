@@ -116,10 +116,9 @@ Detectors are registered in a `DetectorRegistry` at startup, each declaring whic
 
 | Detector | Applies to event types | Layers | ML? |
 |---|---|---|---|
-| `SQLInjectionDetector` | `browser_url`, `system_log`, text analyze | regex/signature → normalization → TF-IDF+classical ML → optional transformer | Yes, tier 3 of 3 |
-| `PromptInjectionDetector` | prompt/text analyze, `gmail_message`, `telegram_message`, `whatsapp_message` | pattern → Unicode/confusable normalization → encoding/obfuscation → entropy → semantic → ML classifier | Yes, one of 6 signals |
-| `PhishingDetector` | `gmail_message`, `telegram_message`, `whatsapp_message`, URL analyze | header/sender/body heuristics + `URLDetector` output + classical ML | Yes |
-| `URLDetector` | any content containing URLs | lexical/structural features, no ML required (deterministic) | Optional scoring assist |
+| `SQLInjectionDetector` | SQL/text analyze | normalization → timeout-bounded rules → lexical structure | No trained model in this checkout |
+| `PromptInjectionDetector` | prompt/text analyze, `gmail_message`, `telegram_message`, `whatsapp_message` | pattern → Unicode/confusable normalization → bounded obfuscation checks | No trained model in this checkout |
+| `URLDetector` | URL/message inputs | lexical/structural local parsing; no fetch or DNS | No trained model in this checkout |
 | `MalwareDetector` | `file_created`, `file_downloaded`, file analyze, attachments | orchestrates Yara/ClamAV/static-ML sub-results | Delegates |
 | `YaraDetector` | files | native `yara-python`, rules in `detection-rules/yara/` | No (signature) |
 | `ClamAVDetector` | files | local `clamd` socket, `Not Configured` if absent | No (signature) |
@@ -149,7 +148,7 @@ Every `analyze()` call returns exactly this shape (Pydantic-enforced, `backend/a
 }
 ```
 
-`evidence` is never empty when `severity` is `MEDIUM` or above — this is a schema-level invariant, not a convention, checked by a Pydantic validator.
+`evidence` is never empty when `severity` is `MEDIUM` or above — this is a schema-level invariant, not a convention, checked by a Pydantic validator. Operational detector status is separate from severity: `no_finding_observed` is not the same as `scanner_or_model_unavailable`, `timed_out`, or `internal_error`.
 
 ---
 

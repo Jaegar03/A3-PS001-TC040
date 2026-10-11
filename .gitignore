@@ -2,6 +2,7 @@
 __pycache__/
 *.pyc
 .venv/
+.venv-audit/
 *.egg-info/
 .pytest_cache/
 .ruff_cache/
@@ -31,6 +32,8 @@ Thumbs.db
 # the scripts in research/datasets/, so the data itself is never committed.
 research/datasets/raw/
 research/datasets/generated/
+research/datasets/**/raw/
+research/datasets/**/processed/
 
 # Local runtime state: generated API signing key and client-secret hashes
 .sentivra/

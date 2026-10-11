@@ -41,8 +41,8 @@ from app.detectors.network.suite import get_suite
 from app.detectors.network_anomaly_detector import NetworkAnomalyDetector
 from app.detectors.prompt_detector import PromptInjectionDetector
 from app.detectors.registry import registry as detector_registry
-from app.detectors.sqli_detector import SQLInjectionDetector
 from app.detectors.sigma_detector import SigmaDetector
+from app.detectors.sqli_detector import SQLInjectionDetector
 from app.detectors.url_detector import URLDetector
 from app.detectors.yara_detector import YaraDetector
 from app.security.auth import load_clients, signing_key

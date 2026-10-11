@@ -5,16 +5,16 @@ import re
 
 from app.detectors.base import AvailabilityStatus, BaseDetector, DetectorAvailability
 from app.detectors.common import action_for, event_text, noisy_or, safe_result, severity_from_score
-from app.detectors.text.views import build_views
 from app.detectors.text.unicode_tools import inspect_hidden_text
+from app.detectors.text.views import build_views
 from app.events.schema import SecurityEvent, SecurityEventType
 from app.schemas.detection import DetectionResult, DetectorCategory, Evidence
 
 _PATTERNS = (
-    ("instruction_override", re.compile(r"\b(ignore|disregard|forget|override)\b.{0,80}\b(instruction|system|policy|previous)\b", re.I), 0.72),
-    ("role_impersonation", re.compile(r"\b(system message|developer message|you are now|act as|jailbreak|dan mode)\b", re.I), 0.58),
-    ("secret_exfiltration", re.compile(r"\b(reveal|print|show|leak|exfiltrate)\b.{0,80}\b(system prompt|secret|token|password|credential)\b", re.I), 0.82),
-    ("tool_abuse", re.compile(r"\b(call|invoke|execute|run)\b.{0,60}\b(tool|function|command|shell)\b", re.I), 0.45),
+    ("instruction_override", re.compile(r"\b(ignore|disregard|forget|override)\b.{0,80}\b(instruction|system|policy|previous)\b", re.IGNORECASE), 0.72),
+    ("role_impersonation", re.compile(r"\b(system message|developer message|you are now|act as|jailbreak|dan mode)\b", re.IGNORECASE), 0.58),
+    ("secret_exfiltration", re.compile(r"\b(reveal|print|show|leak|exfiltrate)\b.{0,80}\b(system prompt|secret|token|password|credential)\b", re.IGNORECASE), 0.82),
+    ("tool_abuse", re.compile(r"\b(call|invoke|execute|run)\b.{0,60}\b(tool|function|command|shell)\b", re.IGNORECASE), 0.45),
 )
 
 

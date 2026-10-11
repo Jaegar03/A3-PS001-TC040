@@ -1,0 +1,6 @@
+name,url,version,license,bytes,sha256,local_path,date_downloaded
+deepset_prompt_injections,https://huggingface.co/datasets/deepset/prompt-injections,publisher train/test,Apache-2.0,"97176","train=7f4d66af20299353ce4d766d65c917bf6df09888fd9e1fb3419a45e45dad9dc5;test=3def58281c3482e60bcba0d496f56d087bc8f02b99f0b3712794790d79dff953",research/datasets/raw/deepset_prompt_injections/,2026-10-11
+seclists_sqli,https://github.com/danielmiessler/SecLists,master MIT files,MIT,,see research/datasets/raw/MANIFEST.json,research/datasets/raw/seclists_sqli/,2026-10-11
+phiusiil,https://archive.ics.uci.edu/dataset/967/phiusiil+phishing+url+dataset,UCI #967,CC BY 4.0,56854345,a236549cd369cd80bd478ff8e1779cbf44c58d5c3f79f7a51a1adbed7d06d1c6,research/datasets/raw/phiusiil/PhiUSIIL_Phishing_URL_Dataset.csv,2026-10-11
+CICIDS2017,https://www.unb.ca/cic/datasets/ids-2017.html,pending,license/access pending,,,,
+UNSW-NB15,https://research.unsw.edu.au/projects/unsw-nb15-dataset,pending,license/access pending,,,,

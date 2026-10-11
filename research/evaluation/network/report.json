@@ -259,16 +259,16 @@
     "latency": {
       "single_flow_all_layers": {
         "n": 500,
-        "p50_ms": 7.224,
-        "p95_ms": 9.701,
-        "max_ms": 14.235
+        "p50_ms": 11.894,
+        "p95_ms": 14.362,
+        "max_ms": 16.978
       }
     }
   },
   "environment": {
     "python": "3.14.2",
     "platform": "Windows-11-10.0.26200-SP0",
-    "numpy": "2.5.3",
+    "numpy": "2.5.4",
     "scikit-learn": "1.9.1",
     "lightgbm": "4.7.0"
   }

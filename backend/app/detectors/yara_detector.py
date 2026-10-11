@@ -15,6 +15,7 @@ from app.schemas.detection import (
     DetectionResult,
     DetectorCategory,
     Evidence,
+    FindingStatus,
     RecommendedAction,
     Severity,
 )
@@ -81,6 +82,7 @@ class YaraDetector(BaseDetector):
                 confidence=0.0,
                 evidence=[],
                 recommended_action=RecommendedAction.ALLOW,
+                status=FindingStatus.SCANNER_OR_MODEL_UNAVAILABLE,
                 model_version=None,
             )
 
@@ -95,6 +97,7 @@ class YaraDetector(BaseDetector):
                 confidence=0.0,
                 evidence=[],
                 recommended_action=RecommendedAction.ALLOW,
+                status=FindingStatus.PARTIAL_ANALYSIS,
                 model_version=None,
             )
 
@@ -108,6 +111,7 @@ class YaraDetector(BaseDetector):
                 confidence=0.9,
                 evidence=[],
                 recommended_action=RecommendedAction.ALLOW,
+                status=FindingStatus.NO_FINDING_OBSERVED,
                 model_version="yara-rules-demo-v1",
             )
 
@@ -140,6 +144,7 @@ class YaraDetector(BaseDetector):
                 if max_declared_severity.rank >= Severity.HIGH.rank
                 else RecommendedAction.REVIEW
             ),
+            status=FindingStatus.SUSPICIOUS,
             model_version="yara-rules-demo-v1",
         )
 
