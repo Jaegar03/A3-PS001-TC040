@@ -8,6 +8,17 @@ import { useApi } from "@/hooks/use-api";
 import { humanize, metricLabel, significant } from "@/lib/format";
 import type { ModelEntry } from "@/types/api";
 
+const DETECTION_CONTEXT: Record<string, string> = {
+  "endpoint/fleet_baseline": "Endpoint detection is implemented with baseline-backed rules; this is the learned fleet baseline artifact.",
+  "malware/ember": "File detection is implemented with metadata, YARA, and optional ClamAV; the EMBER ML artifact is optional and not trained in this checkout.",
+  "network/autoencoder": "Network detection uses this trained model together with behavior rules and other model layers.",
+  "network/classifier": "Network detection uses this trained model together with behavior rules and other model layers.",
+  "network/isolation_forest": "Network detection uses this trained model together with behavior rules and other model layers.",
+  "phishing/url_model": "URL detection is implemented with bounded local heuristics; this optional trained URL model is not present.",
+  "prompt/prompt_injection": "Prompt-injection detection is implemented with bounded heuristic and Unicode-obfuscation rules; this optional trained model is not present.",
+  "sql_injection/classifier": "SQL/NoSQL detection is implemented with the SQL rule pack and lexical analysis; this optional classifier is not trained.",
+};
+
 function Metrics({ metrics }: { metrics: Record<string, number> }) {
   const entries = Object.entries(metrics);
   if (!entries.length) return <p className="text-sm text-muted-foreground">No headline metrics recorded.</p>;
@@ -32,13 +43,19 @@ export default function ModelsPage() {
     <>
       <PageHeader
         title="Models"
-        description="Every model directory in the registry, read live from its metadata.json. A metric is shown only with its dataset, split and evaluation date, and untrained models say so."
+        description="The model registry reports trained artifacts and their provenance. Detection capabilities can also be implemented by rules and heuristics, so an untrained optional model does not mean that the corresponding detector is unavailable."
       />
+      <Card>
+        <CardContent className="text-sm text-muted-foreground">
+          <strong className="text-foreground">How to read this page:</strong> <span className="text-foreground">Available</span> means a verified model artifact is loaded. <span className="text-foreground">Not trained</span> means that optional model is absent; open the detector-specific dashboard page to use the implemented rule or heuristic coverage.
+        </CardContent>
+      </Card>
       {error ? <ErrorState error={error} /> : null}
       {!data && !error ? <LoadingBlock /> : null}
       <div className="grid gap-4 lg:grid-cols-2">
         {data?.map((entry) => {
           const m = entry.metadata;
+          const context = DETECTION_CONTEXT[`${entry.domain}/${entry.name}`];
           return (
             <Card key={`${entry.domain}/${entry.name}`}>
               <CardHeader>
@@ -49,6 +66,7 @@ export default function ModelsPage() {
                 <CardDescription className="font-mono text-xs">{entry.directory}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
+                {context ? <p className="rounded-md border border-dashed p-2 text-muted-foreground">{context}</p> : null}
                 {!m ? (
                   <p className="text-muted-foreground">{entry.reason_untrained}</p>
                 ) : (

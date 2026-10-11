@@ -82,5 +82,5 @@ Nothing is logged: connector logs record counts and outcomes, never message text
 ## 6. Known limits, stated rather than glossed
 
 - **No re-analysis from storage.** Because bodies are not retained, a detector added later cannot be run over old messages. That is the trade the privacy rule makes deliberately: the hash proves *which* message, not *what* it said.
-- **No message-content verdicts yet.** The phishing, URL and prompt-injection detectors are Phase 4. Until they land, a webhook response reports `detectors: []` and says no verdict was produced — it never reports a clean result for analysis that didn't happen.
+- **Message-content analysis.** The URL and prompt-injection detectors inspect webhook content in memory. The stored event retains sender/subject/URLs plus a SHA-256 and length, never the message body. URL analysis is local-only and does not fetch, resolve DNS, or follow redirects. These heuristic findings are review signals, not proof of compromise.
 - **URLs are stored.** Extracted URLs are indicators an analyst needs; they are literal strings copied from the message and are kept alongside the hash rather than hashed themselves.

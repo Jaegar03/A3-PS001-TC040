@@ -107,3 +107,24 @@ export function AnalysisSummary({ result, extra }: { result: AnalysisResponse; e
 export function AnalysisError({ error }: { error: unknown }) {
   return error ? <ErrorState error={error} /> : null;
 }
+
+export function AnalysisForm({ label, placeholder, onSubmit, result, error, busy }: {
+  label: string;
+  placeholder: string;
+  onSubmit: (value: string) => void;
+  result: AnalysisResponse | null;
+  error: unknown;
+  busy: boolean;
+}) {
+  const [value, setValue] = useState("");
+  return (
+    <div className="space-y-3">
+      <form className="space-y-2" onSubmit={(event) => { event.preventDefault(); if (value.trim()) onSubmit(value.trim()); }}>
+        <textarea className="min-h-28 w-full rounded-lg border bg-transparent p-2 text-sm outline-none focus-visible:ring-3 focus-visible:ring-ring/50" value={value} onChange={(event) => setValue(event.target.value)} placeholder={placeholder} aria-label={label} />
+        <Button type="submit" disabled={busy || !value.trim()}>{busy ? "Analyzing…" : label}</Button>
+      </form>
+      <AnalysisError error={error} />
+      {result ? <AnalysisSummary result={result} /> : null}
+    </div>
+  );
+}

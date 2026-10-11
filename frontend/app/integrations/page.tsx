@@ -18,8 +18,16 @@ export default function IntegrationsPage() {
     <>
       <PageHeader
         title="Integrations"
-        description="What is connected versus what is planned. Nothing here shows as available unless it actually works in this build."
+        description="This page reports integration readiness, not just whether an endpoint exists. A connector can be implemented but still require credentials and provider setup before it can receive data."
       />
+      <Card>
+        <CardContent className="grid gap-3 text-sm text-muted-foreground sm:grid-cols-2 lg:grid-cols-4">
+          <div><p className="font-medium text-foreground">Connected</p><p>Configured and has delivered data.</p></div>
+          <div><p className="font-medium text-foreground">Available</p><p>Implemented and ready, but no data has arrived yet.</p></div>
+          <div><p className="font-medium text-foreground">Not configured</p><p>Implemented, but required credentials or paths are missing.</p></div>
+          <div><p className="font-medium text-foreground">Not implemented</p><p>No ingestion path exists in this build.</p></div>
+        </CardContent>
+      </Card>
       {error ? <ErrorState error={error} /> : null}
       {!data && !error ? <LoadingBlock /> : null}
       <div className="grid gap-4 lg:grid-cols-3">
@@ -34,7 +42,12 @@ export default function IntegrationsPage() {
                         <span className="font-medium">{i.name}</span>
                         <StatusPill status={i.status} />
                       </div>
-                      <p className="text-muted-foreground">{i.detail}</p>
+                       <p className="text-muted-foreground">{i.detail}</p>
+                       {i.kind === "messaging" && i.status === "Not configured" ? (
+                         <p className="text-xs font-medium text-amber-700 dark:text-amber-300">
+                           Connector implemented; add the listed environment variables and configure the provider webhook to activate it.
+                         </p>
+                       ) : null}
                       {i.engine_version ? <p className="font-mono text-xs text-muted-foreground">version {i.engine_version}</p> : null}
                     </div>
                   ))}

@@ -109,7 +109,7 @@ export interface Metrics {
     by_status: Partial<Record<AlertStatus, number>>;
     by_classification: Record<string, number>;
     by_detector: Record<string, number>;
-    by_domain: Record<"network" | "files" | "endpoint", number>;
+    by_domain: Record<"network" | "files" | "endpoint" | "urls" | "prompts" | "sql", number>;
     by_source_type: Record<string, number>;
     timeline: { bucket: "hour" | "day"; start: string; counts: number[] };
   };
@@ -180,6 +180,10 @@ export interface AnalysisResponse {
   findings: DetectionResult[];
   risk_assessment: RiskAssessment;
   [key: string]: unknown;
+}
+
+export interface TextAnalysisResponse extends AnalysisResponse {
+  limitations?: string[];
 }
 
 export interface FileAnalysisResponse extends AnalysisResponse {

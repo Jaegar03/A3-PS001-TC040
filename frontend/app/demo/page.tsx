@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Play } from "lucide-react";
 
-import { SeverityBadge, SourceTypeBadge, StatusPill } from "@/components/sentivra/badges";
+import { SeverityBadge, SourceTypeBadge } from "@/components/sentivra/badges";
 import { ErrorState, PageHeader } from "@/components/sentivra/states";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,8 +37,6 @@ const SCENARIOS: { key: string; title: string; what: string; run: () => Promise<
     page: "/endpoint",
   },
 ];
-
-const UNAVAILABLE = ["Prompt injection", "SQL injection", "Phishing URL"];
 
 export default function DemoPage() {
   const [results, setResults] = useState<Record<string, AnalysisResponse | Error>>({});
@@ -100,13 +98,13 @@ export default function DemoPage() {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Not available in this build</CardTitle>
-          <CardDescription>These demonstrations need detectors that haven&apos;t been wired up yet.</CardDescription>
+          <CardTitle>Additional live analysis</CardTitle>
+          <CardDescription>These implemented capabilities are available from their dedicated dashboard workflows.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-wrap gap-4">
-          {UNAVAILABLE.map((name) => (
-            <span key={name} className="flex items-center gap-2 text-sm">{name} <StatusPill status="Not implemented" /></span>
-          ))}
+        <CardContent className="flex flex-wrap gap-4 text-sm">
+          <Link href="/prompt-security" className="underline underline-offset-4">Prompt injection analysis</Link>
+          <Link href="/messages" className="underline underline-offset-4">URL threat analysis</Link>
+          <Link href="/messages" className="underline underline-offset-4">SQL injection analysis</Link>
         </CardContent>
       </Card>
     </>

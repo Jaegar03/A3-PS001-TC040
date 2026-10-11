@@ -93,7 +93,7 @@ Limits apply while the body is received, before FastAPI parses it:
 - **Detection results** use the `DetectionResult` shape: `detector`, `category`, `severity`, `score`, `confidence`, `evidence[]`, `recommended_action`, `model_version`, `mitre_attack[]`. Any severity above LOW always has at least one evidence item.
 - **Aggregate verdicts** use the `RiskAssessment` shape: `risk_score` (0–100), `severity`, `classification`, `confidence` and `findings[]`. `risk_score` is a weighted heuristic, not a calibrated probability.
 - **Input labels.** Every analysis response carries `source_type`: `LIVE` for real input (an upload or an integration), `SIMULATED` for the endpoint simulator, or `DEMO_DATA` for bundled synthetic samples. Alert listings carry it too, under `event.source_type`.
-- **Not implemented yet.** An endpoint that is defined but not built answers `501` with an explanation. It never returns a fabricated result.
+- Analysis endpoints use bounded, explainable heuristics where a trained model is not available. They never fetch submitted URLs or claim that a heuristic match proves compromise.
 
 ## System
 
@@ -130,10 +130,10 @@ An alert is created only when the aggregate severity is above SAFE.
 | Method | Path | Body | Description |
 |---|---|---|---|
 | POST | `/api/v1/analyze/file` | multipart `file` | Detects the type from magic bytes, computes SHA-256 and entropy, and checks for archive bombs. Then runs YARA, ClamAV (when reachable) and structural heuristics. The file is never executed. Its bytes are analyzed in memory for the request only and never stored; the hash, metadata and verdict are persisted. Returns `file_metadata`, `findings`, `risk_assessment` and `source_type`. |
-| POST | `/api/v1/analyze/text` | — | **501**: detector not built yet. |
-| POST | `/api/v1/analyze/url` | — | **501**: detector not built yet. |
-| POST | `/api/v1/analyze/prompt` | — | **501**: detector not built yet. |
-| POST | `/api/v1/analyze/sql` | — | **501**: detector not built yet. |
+| POST | `/api/v1/analyze/text` | `{"text":"..."}` | Bounded text analysis; body is hashed and not persisted |
+| POST | `/api/v1/analyze/url` | `{"url":"https://..."}` | Local URL parsing only; no fetch, redirects, or DNS |
+| POST | `/api/v1/analyze/prompt` | `{"prompt":"..."}` | Prompt-injection and Unicode-obfuscation heuristics |
+| POST | `/api/v1/analyze/sql` | `{"sql":"..."}` | SQL/NoSQL rule-pack and lexical analysis |
 
 ## Network
 
@@ -202,7 +202,7 @@ The 200 body is:
 
 - **`duplicates`** — the event id is derived from the provider's own message id, so a redelivery is recognized and counted, never analyzed twice (no second alert).
 - **`ignored`** — valid traffic with nothing to analyze: delivery/read receipts, Telegram updates that aren't messages.
-- **`detectors`** — which detectors actually ran on the event. It is `[]` today: the phishing, URL and prompt-injection detectors are Phase 4, and the `note` says so rather than implying a clean verdict.
+- **`detectors`** — which detectors actually ran on the event. Webhook message content is analyzed in memory; stored message bodies remain redacted.
 - Findings are **never echoed back to the provider** — they stay in the alerts/audit APIs.
 - Bodies are analyzed in memory and stored as SHA-256 + size, never as text; see [docs/privacy.md](privacy.md).
 

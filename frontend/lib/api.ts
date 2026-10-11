@@ -10,6 +10,7 @@ import type {
   BatchAnalysisResponse,
   FileAnalysisResponse,
   NetworkAnalysisResponse,
+  TextAnalysisResponse,
 } from "@/types/api";
 
 export const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000").replace(/\/$/, "");
@@ -81,6 +82,8 @@ export const api = {
   analyzeOsquery: (file: File) => upload<BatchAnalysisResponse>("/api/v1/endpoint/osquery", file),
   endpointDemo: () => request<BatchAnalysisResponse>("/api/v1/endpoint/demo", { method: "POST" }),
   analyzeLogs: (file: File) => upload<BatchAnalysisResponse>("/api/v1/logs/analyze", file),
-  /** Endpoints the API contract defines but whose detectors haven't landed; they answer 501. */
-  probe: (path: string) => request<unknown>(path, { method: "POST" }),
+  analyzeText: (text: string) => request<TextAnalysisResponse>("/api/v1/analyze/text", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) }),
+  analyzePrompt: (prompt: string) => request<TextAnalysisResponse>("/api/v1/analyze/prompt", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }) }),
+  analyzeSql: (sql: string) => request<TextAnalysisResponse>("/api/v1/analyze/sql", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sql }) }),
+  analyzeUrl: (url: string) => request<TextAnalysisResponse>("/api/v1/analyze/url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) }),
 };

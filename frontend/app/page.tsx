@@ -42,14 +42,14 @@ function StatTile({ label, value, hint }: { label: string; value: string; hint?:
   );
 }
 
-// Domains with detectors count alerts any of their detectors contributed to.
-// Domains whose detector hasn't been built say so instead of showing a zero
-// that would read as "nothing found".
-const DOMAINS: { label: string; domain: "network" | "files" | "endpoint" | null; href: string }[] = [
+// Domains count alerts any of their detectors contributed to. A zero means
+// the capability is implemented but no alert was raised in the selected window.
+const DOMAINS: { label: string; domain: "network" | "files" | "endpoint" | "urls" | "prompts" | "sql"; href: string }[] = [
   { label: "Network anomalies", domain: "network", href: "/network" },
   { label: "Malicious files", domain: "files", href: "/files" },
-  { label: "Suspicious URLs", domain: null, href: "/messages" },
-  { label: "Prompt attacks", domain: null, href: "/prompt-security" },
+  { label: "Suspicious URLs", domain: "urls", href: "/messages" },
+  { label: "Prompt attacks", domain: "prompts", href: "/prompt-security" },
+  { label: "SQL injection", domain: "sql", href: "/messages" },
   { label: "Endpoint anomalies", domain: "endpoint", href: "/endpoint" },
 ];
 
@@ -169,17 +169,14 @@ export default function OverviewPage() {
             </>
           )}
 
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-6">
             {DOMAINS.map((d) => (
               <Link key={d.label} href={d.href} className="block">
                 <Card size="sm" className="h-full hover:ring-foreground/25">
                   <CardContent className="space-y-1">
                     <p className="text-sm text-muted-foreground">{d.label}</p>
-                    {d.domain ? (
-                      <p className="text-2xl font-semibold">{integer(m.window.by_domain[d.domain] ?? 0)}</p>
-                    ) : (
-                      <p className="text-sm font-medium">Detector not built yet</p>
-                    )}
+                    <p className="text-2xl font-semibold">{integer(m.window.by_domain[d.domain] ?? 0)}</p>
+                    <p className="text-xs text-muted-foreground">implemented</p>
                   </CardContent>
                 </Card>
               </Link>

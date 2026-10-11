@@ -4,6 +4,7 @@ scores to severities and actions the same way the RiskEngine does."""
 from __future__ import annotations
 
 from collections.abc import Iterable
+from typing import Any
 
 from app.schemas.detection import (
     DetectionResult,
@@ -11,6 +12,30 @@ from app.schemas.detection import (
     RecommendedAction,
     Severity,
 )
+
+MAX_ANALYSIS_CHARS = 12_000
+
+
+def bounded_text(value: Any, *, limit: int = MAX_ANALYSIS_CHARS) -> str:
+    return "" if value is None else str(value)[:limit]
+
+
+def event_text(event: Any, *, limit: int = MAX_ANALYSIS_CHARS) -> str:
+    metadata = getattr(event, "metadata", {}) or {}
+    if metadata.get("analysis_text") not in (None, ""):
+        return bounded_text(metadata["analysis_text"], limit=limit)
+    content = getattr(event, "content", None)
+    if content is None:
+        return ""
+    return bounded_text("\n".join(p for p in (content.subject or "", content.body or "") if p), limit=limit)
+
+
+def event_urls(event: Any, *, limit: int = 32) -> list[str]:
+    metadata = getattr(event, "metadata", {}) or {}
+    if metadata.get("analysis_url") not in (None, ""):
+        return [bounded_text(metadata["analysis_url"], limit=2048)]
+    content = getattr(event, "content", None)
+    return [bounded_text(u, limit=2048) for u in (getattr(content, "urls", []) if content else [])[:limit] if u]
 
 # Same cut points as app.risk.engine, so a detector's own severity label
 # and the aggregate label never disagree about what a score means.

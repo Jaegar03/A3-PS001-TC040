@@ -78,12 +78,6 @@ def test_analyze_file_flags_disguised_executable(app_client):
     assert body["file_metadata"]["extension_mismatch"] is True
 
 
-def test_unimplemented_analyze_endpoints_return_501_not_fake_success(app_client):
-    for path in ("text", "url", "prompt", "sql"):
-        resp = app_client.post(f"/api/v1/analyze/{path}")
-        assert resp.status_code == 501
-
-
 def test_events_roundtrip(app_client):
     ingest = app_client.post(
         "/api/v1/events",
