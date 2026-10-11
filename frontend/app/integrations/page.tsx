@@ -26,6 +26,7 @@ export default function IntegrationsPage() {
           <div><p className="font-medium text-foreground">Available</p><p>Implemented and ready, but no data has arrived yet.</p></div>
           <div><p className="font-medium text-foreground">Not configured</p><p>Implemented, but required credentials or paths are missing.</p></div>
           <div><p className="font-medium text-foreground">Not implemented</p><p>No ingestion path exists in this build.</p></div>
+          <div><p className="font-medium text-foreground">Degraded / Error</p><p>Implemented, but the engine reported a runtime or coverage problem.</p></div>
         </CardContent>
       </Card>
       {error ? <ErrorState error={error} /> : null}

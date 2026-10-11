@@ -166,7 +166,7 @@ export interface RulesInventory {
 export interface Integration {
   name: string;
   kind: "messaging" | "telemetry" | "engine";
-  status: "Connected" | "Available" | "Not configured" | "Not implemented";
+  status: "Connected" | "Available" | "Not configured" | "Not implemented" | "Degraded" | "Error";
   detail: string;
   credentials_configured?: boolean;
   engine_version?: string | null;

@@ -54,7 +54,9 @@ async def list_integrations(db: Session = Depends(get_db),
         if detector is None:
             return {"name": label, "kind": "engine", "status": "Not configured", "detail": "Detector not registered"}
         availability = await detector.is_available()
-        status = "Available" if availability.status.value == "Available" else "Not configured"
+        status = availability.status.value
+        if status == "Not Configured":
+            status = "Not configured"
         return {"name": label, "kind": "engine", "status": status, "detail": availability.detail,
                 "engine_version": availability.engine_version}
 
