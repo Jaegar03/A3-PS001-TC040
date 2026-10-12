@@ -60,7 +60,9 @@ jobs:
         run: npm ci
       - name: Lint (eslint)
         run: npm run lint
-      - name: Type check
-        run: npx tsc --noEmit
+      # Build before the standalone type check: Next generates the route
+      # types (LayoutProps etc.) that `tsc --noEmit` needs during the build.
       - name: Production build
         run: npm run build
+      - name: Type check
+        run: npx tsc --noEmit

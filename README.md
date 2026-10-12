@@ -88,8 +88,8 @@ pytest -q          # isolated temporary database; never touches ./sentivra.db
 
 cd ../frontend
 npm run lint
-npx tsc --noEmit
 npm run build
+npx tsc --noEmit   # type check; needs the route types the build generates
 ```
 
 Both suites also run on every push and pull request through GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)).

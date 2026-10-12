@@ -24,8 +24,8 @@ pytest -q
 cd frontend
 npm ci                # or npm install
 npm run lint          # eslint
-npx tsc --noEmit      # type check
 npm run build         # production build (Next.js)
+npx tsc --noEmit      # type check (needs the route types the build generates)
 ```
 
 There is no frontend test framework in this repository; the checks above are the automated ones that exist. The dashboard needs a running backend to *display* data, but none of these checks contact it.
