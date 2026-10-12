@@ -22,11 +22,13 @@ pytest -q
 
 ```bash
 cd frontend
-npm ci                # or npm install
+npm install --no-audit --no-fund
 npm run lint          # eslint
 npm run build         # production build (Next.js)
 npx tsc --noEmit      # type check (needs the route types the build generates)
 ```
+
+> `npm ci` fails on Linux with this lockfile: it was generated on Windows and npm (cli#6791) omits other platforms' optional dependencies from it. Use `npm install`, which honours the lockfile where valid.
 
 There is no frontend test framework in this repository; the checks above are the automated ones that exist. The dashboard needs a running backend to *display* data, but none of these checks contact it.
 
@@ -43,7 +45,7 @@ Two parallel jobs, least-privilege (`permissions: contents: read`), no secrets, 
 | Job | Steps |
 |---|---|
 | Backend | `pip install -e ".[dev]"` → `ruff check .` → `pytest -q` |
-| Frontend | `npm ci` → `npm run lint` → `npx tsc --noEmit` → `npm run build` |
+| Frontend | `npm install --no-audit --no-fund` → `npm run lint` → `npm run build` → `npx tsc --noEmit` |
 
 **Before merging:** both jobs must pass. A red check must not be ignored or re-run until it happens to go green; fix the cause.
 
