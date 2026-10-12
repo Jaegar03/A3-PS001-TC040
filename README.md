@@ -1,6 +1,8 @@
 # SENTIVRA
 TEAM INTRODUCTION:- https://youtube.com/shorts/fAVnNkiJjwA?feature=share
 
+> **About this repository.** This is the team's **AIORI-3 hackathon submission** (problem statement PS001, team TC040): a snapshot of the SENTIVRA platform plus the submission materials ([Sentivra_Hackathon.pdf](Sentivra_Hackathon.pdf)) and the [research/](research/) evaluation environment. The primary SENTIVRA repository continues separately; nothing here depends on it at runtime.
+
 **One Security Layer. Every Threat.**
 
 SENTIVRA is a demonstration-quality, multi-layer cybersecurity detection platform: a single unified architecture where specialized detectors (file/malware, SQL injection, prompt injection, phishing/malicious URL, network anomaly, endpoint behavior, Sigma/log rules) each produce independent, evidence-backed findings that a risk engine aggregates into one explainable severity verdict — never a single model's opinion presented as a final decision.
@@ -9,7 +11,7 @@ This is a **local, demonstration build** — no Docker, no Kubernetes, no Redis/
 
 ## Project status
 
-Built in phases (see [docs/architecture.md](docs/architecture.md) § Implementation Order). Current state:
+Built in phases. Current state:
 
 | Phase | Scope | Status |
 |---|---|---|
@@ -81,12 +83,19 @@ curl -H "$AUTH" http://localhost:8000/api/v1/detectors
 
 Tokens last an hour. The examples below assume `$AUTH` is set. Interactive API docs are at `http://localhost:8000/docs` (development only). To call routes from there, paste `$TOKEN` into **Authorize**.
 
-Run the test suite:
+Run the test suite (see [docs/testing.md](docs/testing.md); no external services or credentials are required):
 
 ```bash
 cd backend
-pytest -q
+pytest -q          # isolated temporary database; never touches ./sentivra.db
+
+cd ../frontend
+npm run lint
+npm run build
+npx tsc --noEmit   # type check; needs the route types the build generates
 ```
+
+Both suites also run on every push and pull request through GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)).
 
 ## Try the file detector right now
 
@@ -156,6 +165,8 @@ Open **Demo mode** in the sidebar and choose *Run all scenarios* to see the whol
 
 ## Documentation
 
+- [docs/capability-matrix.md](docs/capability-matrix.md) — what is implemented and tested, what needs configuration, what is only simulated, and what does not exist
+- [docs/testing.md](docs/testing.md) — how to run every check locally and what CI runs
 - [docs/repository-analysis.md](docs/repository-analysis.md) — survey of every reference repository named in the project brief, with license/maintenance/decision per repo
 - [docs/architecture.md](docs/architecture.md) — system design, data flow, detector matrix, model registry
 - [docs/threat-model.md](docs/threat-model.md) — STRIDE analysis of Sentivra itself, plus stated per-detector limitations

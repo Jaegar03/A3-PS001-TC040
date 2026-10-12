@@ -1,12 +1,14 @@
 """POST /api/v1/analyze/{text,url,file,prompt,sql} (brief §25).
 
-Only `file` is implemented in this phase (Phase 3). The remaining four
-analyze endpoints depend on detectors landing in Phase 4
-(SQLInjectionDetector, PhishingDetector/URLDetector, PromptInjectionDetector)
-and return HTTP 501 with an explicit message in the meantime — a route
-that silently 404s would be harder to distinguish from a typo than one
-that honestly reports "not implemented yet" (brief §32's "no fake
-features" principle applied to API surface, not just detection results).
+All five endpoints are implemented: `file` (Phase 3 — metadata, YARA,
+ClamAV when reachable, structural heuristics) and the Phase 4 text
+endpoints `text`, `url`, `prompt` and `sql`, which run the
+SQLInjectionDetector, URLDetector and PromptInjectionDetector over
+bounded, explainable rule/heuristic layers — not trained models
+(docs/model-card.md). Submitted bodies and URLs are analyzed in memory
+and never persisted, and a submitted URL is parsed locally without any
+network fetch (brief §32's "no fake features" principle applied to API
+surface, not just detection results).
 """
 
 from __future__ import annotations
