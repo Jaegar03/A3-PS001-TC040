@@ -56,8 +56,13 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: frontend/package-lock.json
-      - name: Install dependencies (lockfile)
-        run: npm ci
+      # `npm ci` is deliberately NOT used: this lockfile was generated on
+      # Windows, and npm (cli#6791) omits other platforms' optional
+      # dependencies from it (@emnapi/* under @img/sharp-libvips-linux-*),
+      # so `npm ci` aborts on the Linux runner. `npm install` still resolves
+      # against the lockfile where it is valid.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
       - name: Lint (eslint)
         run: npm run lint
       # Build before the standalone type check: Next generates the route
