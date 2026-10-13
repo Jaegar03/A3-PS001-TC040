@@ -22,7 +22,7 @@ class PromptInjectionDetector(BaseDetector):
     name = "PromptInjectionDetector"
     version = "0.1.0"
     category = DetectorCategory.PROMPT_INJECTION
-    applicable_event_types = frozenset({SecurityEventType.PROMPT_ANALYSIS, SecurityEventType.GMAIL_MESSAGE, SecurityEventType.TELEGRAM_MESSAGE, SecurityEventType.WHATSAPP_MESSAGE})
+    applicable_event_types = frozenset({SecurityEventType.PROMPT_ANALYSIS, SecurityEventType.TEXT_ANALYSIS, SecurityEventType.GMAIL_MESSAGE, SecurityEventType.TELEGRAM_MESSAGE, SecurityEventType.WHATSAPP_MESSAGE})
 
     async def is_available(self) -> DetectorAvailability:
         return DetectorAvailability(status=AvailabilityStatus.AVAILABLE, detail="Heuristic prompt-injection rules loaded")

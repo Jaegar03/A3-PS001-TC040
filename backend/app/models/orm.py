@@ -62,6 +62,10 @@ class AlertORM(Base):
     confidence: Mapped[float] = mapped_column(Float)
     assessment_json: Mapped[str] = mapped_column(Text)  # full RiskAssessment, JSON-serialized
     status: Mapped[str] = mapped_column(String(16), default="OPEN", index=True)  # OPEN/ACKNOWLEDGED/RESOLVED
+    disposition: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
+    disposition_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    disposition_by: Mapped[str | None] = mapped_column(String(128), nullable=True)
+    disposition_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_utcnow, index=True)
 
 

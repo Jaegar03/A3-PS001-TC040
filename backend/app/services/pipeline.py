@@ -14,7 +14,8 @@ from sqlalchemy.orm import Session
 
 from app.audit import service as audit_service
 from app.detectors.registry import DetectorRegistry
-from app.events.schema import SecurityEvent
+from app.events.schema import SecurityEvent, SecurityEventType
+from app.integrations.common import without_body
 from app.risk.engine import RiskEngine
 from app.schemas.detection import AnalysisStatus, DetectionResult, FindingStatus, RiskAssessment
 from app.security.auth import current_actor
@@ -77,9 +78,21 @@ async def run_pipeline(
             "analysis_errors": sorted(set(errors)),
         })
 
-    EventRepository(db).create_if_absent(persist or event)
+    stored_event = persist or event
+    if stored_event.event_type in {
+        SecurityEventType.GMAIL_MESSAGE,
+        SecurityEventType.TELEGRAM_MESSAGE,
+        SecurityEventType.WHATSAPP_MESSAGE,
+    }:
+        stored_event = without_body(stored_event)
+    EventRepository(db).create_if_absent(stored_event)
     if assessment.severity.rank > 0:  # only persist an alert when there's something to alert on
-        AlertRepository(db).create(assessment)
+        alerts = AlertRepository(db)
+        existing = alerts.get_by_event(event.event_id)
+        if existing is None:
+            alerts.create(assessment)
+        else:
+            assessment = alerts.to_domain(existing)
     audit_service.record(
         db,
         actor=actor or current_actor(),

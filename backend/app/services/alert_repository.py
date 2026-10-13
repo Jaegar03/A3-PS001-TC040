@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -11,6 +11,7 @@ from app.models.orm import AlertORM
 from app.schemas.detection import RiskAssessment, Severity
 
 ALERT_STATUSES = ("OPEN", "ACKNOWLEDGED", "RESOLVED")
+ALERT_DISPOSITIONS = ("TRUE_POSITIVE", "FALSE_POSITIVE", "BENIGN_INTERESTING", "DUPLICATE")
 
 
 class AlertRepository:
@@ -34,6 +35,11 @@ class AlertRepository:
 
     def get(self, alert_id: str) -> AlertORM | None:
         return self._db.get(AlertORM, alert_id)
+
+    def get_by_event(self, event_id: str) -> AlertORM | None:
+        """Return the existing alert for an event, if one was already raised."""
+        stmt = select(AlertORM).where(AlertORM.event_id == event_id).order_by(AlertORM.created_at.asc())
+        return self._db.execute(stmt).scalars().first()
 
     def list_recent(
         self,
@@ -61,6 +67,17 @@ class AlertRepository:
         if status not in ALERT_STATUSES:
             raise ValueError(f"status must be one of {ALERT_STATUSES}")
         row.status = status
+        self._db.commit()
+        self._db.refresh(row)
+        return row
+
+    def set_disposition(self, row: AlertORM, disposition: str | None, note: str | None, actor: str) -> AlertORM:
+        if disposition is not None and disposition not in ALERT_DISPOSITIONS:
+            raise ValueError(f"disposition must be one of {ALERT_DISPOSITIONS}")
+        row.disposition = disposition
+        row.disposition_note = note
+        row.disposition_by = actor if disposition else None
+        row.disposition_at = datetime.now(UTC) if disposition else None
         self._db.commit()
         self._db.refresh(row)
         return row

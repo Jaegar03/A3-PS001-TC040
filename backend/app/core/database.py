@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import get_settings
@@ -39,6 +39,21 @@ def init_db() -> None:
     from app import models  # noqa: F401  (ensure ORM models are registered)
 
     Base.metadata.create_all(bind=engine)
+    # Keep the demo SQLite deployment compatible with databases created before
+    # alert dispositions existed. Production migrations should replace this
+    # additive compatibility step when Alembic is introduced.
+    if engine.dialect.name == "sqlite":
+        columns = {column["name"] for column in inspect(engine).get_columns("alerts")}
+        additions = {
+            "disposition": "VARCHAR(32)",
+            "disposition_note": "TEXT",
+            "disposition_by": "VARCHAR(128)",
+            "disposition_at": "DATETIME",
+        }
+        with engine.begin() as connection:
+            for name, definition in additions.items():
+                if name not in columns:
+                    connection.execute(text(f"ALTER TABLE alerts ADD COLUMN {name} {definition}"))
 
 
 def get_db() -> Generator[Session, None, None]:

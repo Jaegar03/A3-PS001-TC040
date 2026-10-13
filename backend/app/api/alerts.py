@@ -28,6 +28,7 @@ _UNKNOWN_EVENT = {"source": None, "source_type": None, "event_type": None}
 class AlertStatusUpdate(BaseModel):
     status: Literal["OPEN", "ACKNOWLEDGED", "RESOLVED"]
     note: str | None = Field(default=None, max_length=500)
+    disposition: Literal["TRUE_POSITIVE", "FALSE_POSITIVE", "BENIGN_INTERESTING", "DUPLICATE"] | None = None
 
 
 @router.get("", dependencies=[Depends(require_scopes("read"))])
@@ -43,7 +44,7 @@ async def list_alerts(
                             status=status)
     events = EventRepository(db).summaries([r.event_id for r in rows])
     return [
-        {**repo.to_domain(r).model_dump(mode="json"), "status": r.status,
+         {**repo.to_domain(r).model_dump(mode="json"), "status": r.status, "disposition": r.disposition,
          "event": events.get(r.event_id, _UNKNOWN_EVENT)}
         for r in rows
     ]
@@ -60,6 +61,7 @@ async def get_alert(alert_id: str, db: Session = Depends(get_db)) -> dict:
     return {
         **repo.to_domain(row).model_dump(mode="json"),
         "status": row.status,
+        "disposition": row.disposition,
         "event": events.to_domain(event_row).model_dump(mode="json") if event_row else _UNKNOWN_EVENT,
     }
 
@@ -72,6 +74,9 @@ async def update_alert_status(alert_id: str, update: AlertStatusUpdate, db: Sess
         raise HTTPException(status_code=404, detail="Alert not found")
     previous = row.status
     repo.set_status(row, update.status)
+    repo.set_disposition(row, update.disposition, update.note, current_actor())
     audit_service.record(db, actor=current_actor(), action="alert_status_change", resource=f"alert:{alert_id}",
-                         detail={"from": previous, "to": update.status, "note": update.note})
-    return {"alert_id": alert_id, "status": row.status, "previous_status": previous}
+                         detail={"from": previous, "to": update.status, "note": update.note,
+                                 "disposition": update.disposition})
+    return {"alert_id": alert_id, "status": row.status, "previous_status": previous,
+            "disposition": row.disposition}

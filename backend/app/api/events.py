@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db, get_detector_registry
@@ -30,7 +30,7 @@ async def ingest_event(
 
 
 @router.get("", dependencies=[Depends(require_scopes("read"))])
-async def list_events(limit: int = 50, offset: int = 0, db: Session = Depends(get_db)) -> list[dict]:
+async def list_events(limit: int = Query(50, ge=1, le=500), offset: int = Query(0, ge=0), db: Session = Depends(get_db)) -> list[dict]:
     repo = EventRepository(db)
     rows = repo.list_recent(limit=limit, offset=offset)
     return [repo.to_domain(r).model_dump(mode="json") for r in rows]
