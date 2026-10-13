@@ -1,5 +1,5 @@
 # SENTIVRA
-TEAM INTRODUCTION:- https://youtube.com/shorts/fAVnNkiJjwA?feature=share
+TEAM INTRODUCTION: https://youtube.com/shorts/fAVnNkiJjwA?feature=share
 
 > **About this repository.** This is the team's **AIORI-3 hackathon submission** (problem statement PS001, team TC040): a snapshot of the SENTIVRA platform plus the submission materials ([Sentivra_Hackathon.pdf](Sentivra_Hackathon.pdf)) and the [research/](research/) evaluation environment. The primary SENTIVRA repository continues separately; nothing here depends on it at runtime.
 
@@ -83,7 +83,7 @@ curl -H "$AUTH" http://localhost:8000/api/v1/detectors
 
 Tokens last an hour. The examples below assume `$AUTH` is set. Interactive API docs are at `http://localhost:8000/docs` (development only). To call routes from there, paste `$TOKEN` into **Authorize**.
 
-Run the test suite (see [docs/testing.md](docs/testing.md); no external services or credentials are required):
+Run the test suite (see [docs/testing.md](docs/testing.md) for details, including which tests need external services — none do in the default configuration):
 
 ```bash
 cd backend
@@ -165,8 +165,8 @@ Open **Demo mode** in the sidebar and choose *Run all scenarios* to see the whol
 
 ## Documentation
 
-- [docs/capability-matrix.md](docs/capability-matrix.md) — what is implemented and tested, what needs configuration, what is only simulated, and what does not exist
-- [docs/testing.md](docs/testing.md) — how to run every check locally and what CI runs
+- [docs/CAPABILITY_MATRIX.md](docs/CAPABILITY_MATRIX.md) — **the authoritative inventory of what works, what is experimental, what needs configuration and what does not exist**, with the tests that verify each row
+- [docs/testing.md](docs/testing.md) — how to run every check locally, what CI runs, and which tests use synthetic or simulated data
 - [docs/repository-analysis.md](docs/repository-analysis.md) — survey of every reference repository named in the project brief, with license/maintenance/decision per repo
 - [docs/architecture.md](docs/architecture.md) — system design, data flow, detector matrix, model registry
 - [docs/threat-model.md](docs/threat-model.md) — STRIDE analysis of Sentivra itself, plus stated per-detector limitations

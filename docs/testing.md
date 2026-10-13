@@ -1,6 +1,6 @@
 # Testing and CI
 
-Everything documented here was executed against this repository on 2026-10-12 (Windows 11, Python 3.14 venv, Node with `package-lock.json`). CI runs the same commands on Ubuntu with Python 3.12 and Node 22.
+Everything documented here was executed against this repository on 2026-10-12 (Windows 11, backend `.venv` on Python 3.14, frontend on Node with `package-lock.json`). CI runs the same commands on Ubuntu with Python 3.12 and Node 22.
 
 ## Backend
 
@@ -36,8 +36,8 @@ There is no frontend test framework in this repository; the checks above are the
 
 [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on:
 
-- pushes to `main` or `master`;
-- pull requests targeting `main` or `master`;
+- pushes to `master` or `main`;
+- pull requests targeting `master` or `main`;
 - manual dispatch (`workflow_dispatch`).
 
 Two parallel jobs, least-privilege (`permissions: contents: read`), no secrets, no external services:
@@ -47,13 +47,13 @@ Two parallel jobs, least-privilege (`permissions: contents: read`), no secrets, 
 | Backend | `pip install -e ".[dev]"` → `ruff check .` → `pytest -q` |
 | Frontend | `npm install --no-audit --no-fund` → `npm run lint` → `npm run build` → `npx tsc --noEmit` |
 
-**Before merging:** both jobs must pass. A red check must not be ignored; fix the cause.
+**Before merging:** both jobs must pass. A red check must not be ignored or re-run until it happens to go green; fix the cause.
 
 ## Synthetic and simulated data in tests
 
 Several detectors are evaluated only on synthetic/simulated data, and their tests say so:
 
-- `test_network.py` / `test_network_api.py` — synthetic flow samples and `DEMO_DATA` labels; they verify the pipeline and calibration behaviour, **not** real-traffic detection quality.
+- `test_network.py` / `test_network_api.py` — synthetic flow samples, bundled fixtures and `DEMO_DATA` labels; they verify the pipeline and calibration behaviour, **not** real-traffic detection quality.
 - `test_endpoint.py` / `test_endpoint_api.py` / `test_osquery.py` — osquery fixtures and the simulated fleet; they verify parsing, rules and labelling, not live endpoint ingestion.
 - `test_text_detectors.py` / `test_text_analysis_api.py` — detection fixtures for the SQL-injection, prompt-injection and URL heuristics, including benign false-positive regressions; these detectors' optional ML artifacts are untrained (see [model-card.md](model-card.md)).
 

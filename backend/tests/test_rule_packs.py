@@ -32,3 +32,13 @@ def test_all_sigma_rules_load_as_supported():
 
     report = load_rules(RULES_DIR / "sigma")
     assert report.loaded and report.unsupported == []
+
+
+def test_rules_inventory_lists_sql_injection_detector(app_client):
+    """The SQL pack is wired to SQLInjectionDetector. Regression: the
+    /api/v1/rules inventory used to advertise it as 'not wired yet' after
+    Phase 4 had already shipped the detector."""
+    resp = app_client.get("/api/v1/rules")
+    assert resp.status_code == 200
+    packs = {item["file"]: item["used_by"] for item in resp.json()["custom"]}
+    assert packs["detection-rules/custom/sql_injection.yaml"] == "SQLInjectionDetector"

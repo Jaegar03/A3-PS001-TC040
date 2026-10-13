@@ -1,16 +1,16 @@
-# CI for the AIORI-3 submission (SENTIVRA snapshot): backend (ruff + pytest)
-# and frontend (eslint + tsc + build). No secrets, no external services, no
-# production data: the backend test suite provisions its own temporary SQLite
-# database and explicit test clients (backend/tests/conftest.py), so nothing
-# here touches a developer's ./sentivra.db or .sentivra/ state.
+# CI for SENTIVRA: backend (ruff + pytest) and frontend (eslint + tsc + build).
+# No secrets, no external services, no production data: the backend test suite
+# provisions its own temporary SQLite database and explicit test clients
+# (backend/tests/conftest.py), so nothing here touches a developer's
+# ./sentivra.db or .sentivra/ state.
 
 name: CI
 
 on:
   push:
-    branches: [main, master]
+    branches: [master, main]
   pull_request:
-    branches: [main, master]
+    branches: [master, main]
   workflow_dispatch:
 
 permissions:
