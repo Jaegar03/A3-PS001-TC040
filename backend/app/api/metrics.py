@@ -69,6 +69,8 @@ async def metrics(window_hours: int = Query(24, ge=1, le=24 * 30), db: Session =
             timeline[index] += 1
 
     open_by_severity = Counter(r.severity for r in rows if r.status == "OPEN")
+    dispositions = Counter(r.disposition or "PENDING_REVIEW" for r in rows)
+    reviewed = sum(v for k, v in dispositions.items() if k != "PENDING_REVIEW")
     penalty = sum(SCORE_PENALTIES.get(sev, 0) * n for sev, n in open_by_severity.items())
 
     return {
@@ -89,6 +91,14 @@ async def metrics(window_hours: int = Query(24, ge=1, le=24 * 30), db: Session =
             "by_domain": dict(by_domain),
             "by_source_type": dict(Counter((sources.get(r.event_id) or {}).get("source_type") or "UNKNOWN"
                                            for r in rows)),
+            "alert_quality": {
+                "generated": len(rows),
+                "reviewed": reviewed,
+                "pending_review": dispositions.get("PENDING_REVIEW", 0),
+                "dispositions": dict(dispositions),
+                "reviewed_false_share": round(dispositions.get("FALSE_POSITIVE", 0) / reviewed, 4) if reviewed else None,
+                "denominator_note": "Reviewed-alert false share uses reviewed alerts only; it is not a ground-truth false-positive rate.",
+            },
             "timeline": {
                 "bucket": "hour" if bucket == timedelta(hours=1) else "day",
                 "start": start.isoformat(),

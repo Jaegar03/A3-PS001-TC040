@@ -27,10 +27,10 @@ def test_status_change_is_applied_and_audited(app_client):
     alert_id = _make_alert(app_client)
     resp = app_client.patch(f"/api/v1/alerts/{alert_id}", json={"status": "ACKNOWLEDGED", "note": "triaging"})
     assert resp.status_code == 200 and resp.json() == {"alert_id": alert_id, "status": "ACKNOWLEDGED",
-                                                        "previous_status": "OPEN"}
+                                                        "previous_status": "OPEN", "disposition": None}
     audit = app_client.get("/api/v1/audit", params={"action": "alert_status_change"}).json()
     entry = next(e for e in audit["entries"] if e["resource"] == f"alert:{alert_id}")
-    assert entry["detail"] == {"from": "OPEN", "to": "ACKNOWLEDGED", "note": "triaging"}
+    assert entry["detail"] == {"from": "OPEN", "to": "ACKNOWLEDGED", "note": "triaging", "disposition": None}
 
 
 def test_invalid_status_rejected(app_client):

@@ -26,7 +26,7 @@ class URLDetector(BaseDetector):
     name = "URLDetector"
     version = "0.1.0"
     category = DetectorCategory.PHISHING
-    applicable_event_types = frozenset({SecurityEventType.URL_ANALYSIS, SecurityEventType.BROWSER_URL, SecurityEventType.GMAIL_MESSAGE, SecurityEventType.TELEGRAM_MESSAGE, SecurityEventType.WHATSAPP_MESSAGE})
+    applicable_event_types = frozenset({SecurityEventType.URL_ANALYSIS, SecurityEventType.TEXT_ANALYSIS, SecurityEventType.BROWSER_URL, SecurityEventType.GMAIL_MESSAGE, SecurityEventType.TELEGRAM_MESSAGE, SecurityEventType.WHATSAPP_MESSAGE})
 
     async def is_available(self) -> DetectorAvailability:
         return DetectorAvailability(status=AvailabilityStatus.AVAILABLE, detail="Local URL parser and heuristic rules loaded")
