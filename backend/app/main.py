@@ -56,8 +56,9 @@ logger = logging.getLogger("sentivra")
 
 def _register_detectors() -> None:
     """The single place BaseDetector implementations are wired up
-    (docs/architecture.md §4). Detectors still to come (SQLi, phishing/URL,
-    prompt injection) register here as they land."""
+    (docs/architecture.md §4). Every detector the build ships is registered
+    here at startup; a new detector is added by constructing it in the tuple
+    below."""
     # Idempotent: a fresh registry state on every startup. In production
     # this runs once; test suites that spin up multiple TestClient(app)
     # instances against the same module-level app trigger startup more

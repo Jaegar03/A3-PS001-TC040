@@ -42,6 +42,5 @@ research/datasets/**/processed/
 .freebuff/
 
 # Local-only documents — kept on this machine, never pushed to GitHub
-PRESENTATION.md
 PRESENTATION.pptx
 WALKTHROUGH.md

@@ -1,0 +1,73 @@
+# CI for SENTIVRA: backend (ruff + pytest) and frontend (eslint + tsc + build).
+# No secrets, no external services, no production data: the backend test suite
+# provisions its own temporary SQLite database and explicit test clients
+# (backend/tests/conftest.py), so nothing here touches a developer's
+# ./sentivra.db or .sentivra/ state.
+
+name: CI
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (ruff, pytest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/pyproject.toml
+      - name: Install dependencies
+        run: python -m pip install -e ".[dev]"
+      - name: Lint (ruff)
+        run: ruff check .
+      - name: Tests (pytest)
+        run: pytest -q
+
+  frontend:
+    name: Frontend (eslint, tsc, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # `npm ci` is deliberately NOT used: this lockfile was generated on
+      # Windows, and npm (cli#6791) omits other platforms' optional
+      # dependencies from it (@emnapi/* under @img/sharp-libvips-linux-*),
+      # so `npm ci` aborts on the Linux runner. `npm install` still resolves
+      # against the lockfile where it is valid.
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Lint (eslint)
+        run: npm run lint
+      # Build before the standalone type check: Next generates the route
+      # types (LayoutProps etc.) that `tsc --noEmit` needs during the build.
+      - name: Production build
+        run: npm run build
+      - name: Type check
+        run: npx tsc --noEmit

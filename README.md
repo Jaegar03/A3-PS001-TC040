@@ -1,5 +1,4 @@
 # SENTIVRA
-TEAM INTRODUCTION:- https://youtube.com/shorts/fAVnNkiJjwA?feature=share
 
 **One Security Layer. Every Threat.**
 
@@ -9,7 +8,7 @@ This is a **local, demonstration build** — no Docker, no Kubernetes, no Redis/
 
 ## Project status
 
-Built in phases (see [docs/architecture.md](docs/architecture.md) § Implementation Order). Current state:
+Built in phases. Current state:
 
 | Phase | Scope | Status |
 |---|---|---|
@@ -81,12 +80,19 @@ curl -H "$AUTH" http://localhost:8000/api/v1/detectors
 
 Tokens last an hour. The examples below assume `$AUTH` is set. Interactive API docs are at `http://localhost:8000/docs` (development only). To call routes from there, paste `$TOKEN` into **Authorize**.
 
-Run the test suite:
+Run the test suite (see [docs/testing.md](docs/testing.md) for details, including which tests need external services — none do in the default configuration):
 
 ```bash
 cd backend
-pytest -q
+pytest -q          # isolated temporary database; never touches ./sentivra.db
+
+cd ../frontend
+npm run lint
+npm run build
+npx tsc --noEmit   # type check; needs the route types the build generates
 ```
+
+Both suites also run on every push and pull request through GitHub Actions ([.github/workflows/ci.yml](.github/workflows/ci.yml)).
 
 ## Try the file detector right now
 
@@ -156,6 +162,8 @@ Open **Demo mode** in the sidebar and choose *Run all scenarios* to see the whol
 
 ## Documentation
 
+- [docs/CAPABILITY_MATRIX.md](docs/CAPABILITY_MATRIX.md) — **the authoritative inventory of what works, what is experimental, what needs configuration and what does not exist**, with the tests that verify each row
+- [docs/testing.md](docs/testing.md) — how to run every check locally, what CI runs, and which tests use synthetic or simulated data
 - [docs/repository-analysis.md](docs/repository-analysis.md) — survey of every reference repository named in the project brief, with license/maintenance/decision per repo
 - [docs/architecture.md](docs/architecture.md) — system design, data flow, detector matrix, model registry
 - [docs/threat-model.md](docs/threat-model.md) — STRIDE analysis of Sentivra itself, plus stated per-detector limitations

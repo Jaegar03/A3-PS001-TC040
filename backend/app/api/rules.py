@@ -18,7 +18,7 @@ _CUSTOM_PACKS = {
     "network_rules.yaml": "NetworkAnomalyDetector",
     "endpoint_rules.yaml": "BehavioralAnomalyDetector",
     "auth_rules.yaml": "LogDetector",
-    "sql_injection.yaml": "SQLInjectionDetector (not wired yet)",
+    "sql_injection.yaml": "SQLInjectionDetector",
 }
 
 
