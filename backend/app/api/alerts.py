@@ -41,7 +41,7 @@ async def list_alerts(
 ) -> list[dict]:
     repo = AlertRepository(db)
     rows = repo.list_recent(limit=limit, offset=offset, min_severity_rank=min_severity.rank if min_severity else 0,
-                            status=status)
+                            status=status, actor=current_actor())
     events = EventRepository(db).summaries([r.event_id for r in rows])
     return [
          {**repo.to_domain(r).model_dump(mode="json"), "status": r.status, "disposition": r.disposition,
@@ -53,11 +53,11 @@ async def list_alerts(
 @router.get("/{alert_id}", dependencies=[Depends(require_scopes("read"))])
 async def get_alert(alert_id: str, db: Session = Depends(get_db)) -> dict:
     repo = AlertRepository(db)
-    row = repo.get(alert_id)
+    row = repo.get(alert_id, actor=current_actor())
     if row is None:
         raise HTTPException(status_code=404, detail="Alert not found")
     events = EventRepository(db)
-    event_row = events.get(row.event_id)
+    event_row = events.get(row.event_id, actor=current_actor())
     return {
         **repo.to_domain(row).model_dump(mode="json"),
         "status": row.status,
@@ -69,7 +69,7 @@ async def get_alert(alert_id: str, db: Session = Depends(get_db)) -> dict:
 @router.patch("/{alert_id}", dependencies=[Depends(require_scopes("alerts:write"))])
 async def update_alert_status(alert_id: str, update: AlertStatusUpdate, db: Session = Depends(get_db)) -> dict:
     repo = AlertRepository(db)
-    row = repo.get(alert_id)
+    row = repo.get(alert_id, actor=current_actor())
     if row is None:
         raise HTTPException(status_code=404, detail="Alert not found")
     previous = row.status

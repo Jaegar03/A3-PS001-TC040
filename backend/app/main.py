@@ -29,6 +29,7 @@ from app.api import (
     models,
     network,
     rules,
+    simulation,
     webhooks,
 )
 from app.core.config import get_settings
@@ -132,6 +133,7 @@ def create_app() -> FastAPI:
     app.include_router(audit.router)
     app.include_router(integrations.router)
     app.include_router(webhooks.router)
+    app.include_router(simulation.router)
 
     return app
 

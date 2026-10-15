@@ -21,9 +21,10 @@ from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
 from app.models.orm import AlertORM, EventORM
-from app.security.auth import require_scopes
+from app.security.auth import current_actor, require_scopes
 from app.services.alert_repository import AlertRepository
 from app.services.event_repository import EventRepository
+from app.services.simulation_visibility import operational_event, owned_command_center_event
 
 router = APIRouter(prefix="/api/v1", tags=["system"], dependencies=[Depends(require_scopes("read"))])
 
@@ -49,12 +50,19 @@ def _as_utc(dt: datetime) -> datetime:
 async def metrics(window_hours: int = Query(24, ge=1, le=24 * 30), db: Session = Depends(get_db)) -> dict:
     now = datetime.now(UTC)
     cutoff = now - timedelta(hours=window_hours)
-    rows = AlertRepository(db).since(cutoff)
+    # Filter in SQL before the bounded detail window. Command-center records
+    # must not crowd out operational alerts or change older demo semantics.
+    rows = AlertRepository(db).since(cutoff, operational_only=True)
     sources = EventRepository(db).summaries([r.event_id for r in rows])
+    operational_rows = rows
+    simulation_alerts_excluded = db.execute(select(func.count()).select_from(AlertORM).where(
+        AlertORM.created_at >= cutoff,
+        owned_command_center_event(AlertORM.event_id, current_actor()),
+    )).scalar_one()
 
     by_detector: Counter[str] = Counter()
     by_domain: Counter[str] = Counter({d: 0 for d in DOMAINS})
-    for r in rows:
+    for r in operational_rows:
         detectors = {f["detector"] for f in json.loads(r.assessment_json).get("findings", [])}
         by_detector.update(detectors)
         by_domain.update(d for d, members in DOMAINS.items() if detectors & members)
@@ -63,13 +71,13 @@ async def metrics(window_hours: int = Query(24, ge=1, le=24 * 30), db: Session =
     buckets = int(timedelta(hours=window_hours) / bucket)
     start = now - bucket * buckets
     timeline = [0] * buckets
-    for r in rows:
+    for r in operational_rows:
         index = int((_as_utc(r.created_at) - start) / bucket)
         if 0 <= index < buckets:
             timeline[index] += 1
 
-    open_by_severity = Counter(r.severity for r in rows if r.status == "OPEN")
-    dispositions = Counter(r.disposition or "PENDING_REVIEW" for r in rows)
+    open_by_severity = Counter(r.severity for r in operational_rows if r.status == "OPEN")
+    dispositions = Counter(r.disposition or "PENDING_REVIEW" for r in operational_rows)
     reviewed = sum(v for k, v in dispositions.items() if k != "PENDING_REVIEW")
     penalty = sum(SCORE_PENALTIES.get(sev, 0) * n for sev, n in open_by_severity.items())
 
@@ -77,16 +85,18 @@ async def metrics(window_hours: int = Query(24, ge=1, le=24 * 30), db: Session =
         "window_hours": window_hours,
         "generated_at": now.isoformat(),
         "totals": {
-            "events": db.execute(select(func.count()).select_from(EventORM)).scalar_one(),
-            "alerts": db.execute(select(func.count()).select_from(AlertORM)).scalar_one(),
+            "events": db.execute(select(func.count()).select_from(EventORM).where(
+                operational_event(EventORM.event_id))).scalar_one(),
+            "alerts": db.execute(select(func.count()).select_from(AlertORM).where(
+                operational_event(AlertORM.event_id))).scalar_one(),
         },
         "window": {
-            "alerts": len(rows),
-            "open_alerts": sum(1 for r in rows if r.status == "OPEN"),
-            "by_severity": {s: sum(1 for r in rows if r.severity == s) for s in SEVERITY_ORDER},
+            "alerts": len(operational_rows),
+            "open_alerts": sum(1 for r in operational_rows if r.status == "OPEN"),
+            "by_severity": {s: sum(1 for r in operational_rows if r.severity == s) for s in SEVERITY_ORDER},
             "open_by_severity": {s: open_by_severity.get(s, 0) for s in SEVERITY_ORDER},
-            "by_status": dict(Counter(r.status for r in rows)),
-            "by_classification": dict(Counter(r.classification for r in rows).most_common()),
+            "by_status": dict(Counter(r.status for r in operational_rows)),
+            "by_classification": dict(Counter(r.classification for r in operational_rows).most_common()),
             "by_detector": dict(by_detector.most_common()),
             "by_domain": dict(by_domain),
             "by_source_type": dict(Counter((sources.get(r.event_id) or {}).get("source_type") or "UNKNOWN"
@@ -99,6 +109,7 @@ async def metrics(window_hours: int = Query(24, ge=1, le=24 * 30), db: Session =
                 "reviewed_false_share": round(dispositions.get("FALSE_POSITIVE", 0) / reviewed, 4) if reviewed else None,
                 "denominator_note": "Reviewed-alert false share uses reviewed alerts only; it is not a ground-truth false-positive rate.",
             },
+            "simulation_alerts_excluded": simulation_alerts_excluded,
             "timeline": {
                 "bucket": "hour" if bucket == timedelta(hours=1) else "day",
                 "start": start.isoformat(),

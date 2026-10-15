@@ -11,7 +11,15 @@ from sqlalchemy.orm import Session
 from app.models.orm import AuditLogORM
 
 
-def record(db: Session, *, actor: str, action: str, resource: str, detail: dict[str, Any] | None = None) -> None:
+def record(
+    db: Session,
+    *,
+    actor: str,
+    action: str,
+    resource: str,
+    detail: dict[str, Any] | None = None,
+    commit: bool = True,
+) -> None:
     row = AuditLogORM(
         actor=actor,
         action=action,
@@ -19,4 +27,6 @@ def record(db: Session, *, actor: str, action: str, resource: str, detail: dict[
         detail_json=json.dumps(detail or {}),
     )
     db.add(row)
-    db.commit()
+    db.flush()
+    if commit:
+        db.commit()

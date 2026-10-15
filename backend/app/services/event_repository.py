@@ -12,13 +12,14 @@ from sqlalchemy.orm import Session
 
 from app.events.schema import SecurityEvent
 from app.models.orm import EventORM
+from app.services.simulation_visibility import visible_event
 
 
 class EventRepository:
     def __init__(self, db: Session) -> None:
         self._db = db
 
-    def create_if_absent(self, event: SecurityEvent) -> EventORM:
+    def create_if_absent(self, event: SecurityEvent, *, commit: bool = True) -> EventORM:
         existing = self._db.get(EventORM, event.event_id)
         if existing is not None:
             return existing
@@ -33,12 +34,20 @@ class EventRepository:
             payload_json=event.model_dump_json(),
         )
         self._db.add(row)
-        self._db.commit()
+        # Flush makes the row visible to subsequent repository queries while
+        # allowing callers such as the simulation transaction to commit all
+        # linked records atomically.
+        self._db.flush()
+        if commit:
+            self._db.commit()
         self._db.refresh(row)
         return row
 
-    def get(self, event_id: str) -> EventORM | None:
-        return self._db.get(EventORM, event_id)
+    def get(self, event_id: str, *, actor: str | None = None) -> EventORM | None:
+        stmt = select(EventORM).where(EventORM.event_id == event_id)
+        if actor is not None:
+            stmt = stmt.where(visible_event(EventORM.event_id, actor))
+        return self._db.execute(stmt).scalars().first()
 
     def count_by_source(self, source: str) -> int:
         """How many events one source has delivered. Indexed column only —
@@ -59,13 +68,15 @@ class EventRepository:
         return {r.event_id: {"source": r.source, "source_type": r.source_type, "event_type": r.event_type}
                 for r in self._db.execute(stmt)}
 
-    def list_recent(self, limit: int = 50, offset: int = 0) -> list[EventORM]:
+    def list_recent(self, limit: int = 50, offset: int = 0, *, actor: str | None = None) -> list[EventORM]:
         stmt = (
             select(EventORM)
             .order_by(EventORM.timestamp.desc())
             .offset(offset)
             .limit(limit)
         )
+        if actor is not None:
+            stmt = stmt.where(visible_event(EventORM.event_id, actor))
         return list(self._db.execute(stmt).scalars())
 
     def to_domain(self, row: EventORM) -> SecurityEvent:

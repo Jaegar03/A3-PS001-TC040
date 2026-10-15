@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import {
   Bot,
   BrainCircuit,
+  Crosshair,
   FileSearch,
   FlaskConical,
   History,
@@ -40,6 +41,7 @@ const NAV: { href: string; label: string; icon: typeof Bot; group: string }[] = 
   { href: "/integrations", label: "Integrations", icon: Plug, group: "Platform" },
   { href: "/audit", label: "Audit Log", icon: History, group: "Platform" },
   { href: "/demo", label: "Demo mode", icon: FlaskConical, group: "Platform" },
+  { href: "/cyber-defense", label: "Cyber Defense Lab", icon: Crosshair, group: "Platform" },
   { href: "/settings", label: "Settings", icon: Settings, group: "Platform" },
 ];
 
@@ -112,6 +114,7 @@ function Shell({ children }: { children: ReactNode }) {
           <nav className="flex gap-1 overflow-x-auto md:hidden" aria-label="Main (compact)">
             {NAV.map(({ href, label }) => (
               <Link key={href} href={href}
+                aria-current={isActive(pathname, href) ? "page" : undefined}
                 className={cn("rounded-md px-2 py-1 text-xs whitespace-nowrap", isActive(pathname, href) ? "bg-muted font-medium" : "text-muted-foreground")}>
                 {label}
               </Link>

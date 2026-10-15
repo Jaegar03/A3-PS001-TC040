@@ -6,12 +6,13 @@ from __future__ import annotations
 import json
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.api.deps import get_db
-from app.models.orm import AuditLogORM
-from app.security.auth import require_scopes
+from app.models.orm import AlertORM, AuditLogORM, EventORM
+from app.security.auth import current_actor, require_scopes
+from app.services.simulation_visibility import command_center_event
 
 router = APIRouter(prefix="/api/v1", tags=["audit"], dependencies=[Depends(require_scopes("read"))])
 
@@ -25,6 +26,14 @@ async def list_audit(
 ) -> dict:
     stmt = select(AuditLogORM)
     count = select(func.count()).select_from(AuditLogORM)
+    simulation_resource = or_(
+        AuditLogORM.resource.in_(select("event:" + EventORM.event_id).where(
+            command_center_event(EventORM.event_id))),
+        AuditLogORM.resource.in_(select("alert:" + AlertORM.alert_id).where(
+            command_center_event(AlertORM.event_id))),
+    )
+    visible = or_(~simulation_resource, AuditLogORM.actor == current_actor())
+    stmt, count = stmt.where(visible), count.where(visible)
     if action:
         stmt = stmt.where(AuditLogORM.action == action)
         count = count.where(AuditLogORM.action == action)

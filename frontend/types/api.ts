@@ -119,9 +119,58 @@ export interface Metrics {
     by_domain: Record<"network" | "files" | "endpoint" | "urls" | "prompts" | "sql", number>;
     by_source_type: Record<string, number>;
     timeline: { bucket: "hour" | "day"; start: string; counts: number[] };
+    simulation_alerts_excluded?: number;
   };
   security_score: { value: number; formula: string; penalty: number; note: string };
   note: string;
+}
+
+export interface SimulationScenario {
+  scenario_id: string;
+  name: string;
+  category: string;
+  description: string;
+  detector: string;
+  detector_allowlist: string[];
+  event_type: string;
+  version: string;
+  expected_outcome: string;
+  limitation: string;
+  detector_availability: { status: string; detail: string; engine_version?: string | null };
+  simulation_warning: string;
+}
+
+export interface SimulationRun {
+  execution_id: string;
+  scenario_id: string;
+  scenario_version: string;
+  status: "QUEUED" | "RUNNING" | "COMPLETED" | "PARTIALLY_COMPLETED" | "FAILED";
+  simulation_marker: string;
+  source_type: "SIMULATED";
+  detection_state: "DETECTED" | "NOT_DETECTED" | "REVIEW_REQUIRED" | "DETECTOR_UNAVAILABLE" | "ANALYSIS_FAILED";
+  enforcement_decision: "SIMULATED_BLOCK" | "SIMULATED_ALLOW" | "SIMULATED_REVIEW" | "SIMULATED_UNAVAILABLE";
+  event_id?: string | null;
+  alert_id?: string | null;
+  started_at: string;
+  completed_at?: string | null;
+  duration_ms?: number | null;
+  error?: string | null;
+  request_key?: string;
+  errors?: string[];
+  timeline?: { stage: string; timestamp: string }[];
+  detector_results?: DetectionResult[];
+  detector_availability?: Record<string, EngineStatus>;
+  findings?: DetectionResult[];
+  risk_assessment?: RiskAssessment | null;
+  enforcement?: { decision: string; reason: string; mode: string; real_world_action_taken: boolean };
+  scenario?: { id: string; name: string; limitation: string };
+}
+
+export interface SimulationStats {
+  totals: { runs: number; completed: number; partial: number; failed: number; running: number; detected: number; blocks: number };
+  by_scenario: { scenario_id: string; runs: number; avg_duration_ms: number; failed: number; detected: number }[];
+  timeline: { execution_id: string; scenario_id: string; status: string; detection_state: string; timestamp: string }[];
+  timeline_truncated: boolean;
 }
 
 export interface ModelMetadata {

@@ -54,6 +54,27 @@ def init_db() -> None:
             for name, definition in additions.items():
                 if name not in columns:
                     connection.execute(text(f"ALTER TABLE alerts ADD COLUMN {name} {definition}"))
+        # The simulation surface was introduced after the initial demo schema.
+        # Keep an already-created local database readable without requiring a
+        # destructive migration. New databases get the same constraint from
+        # SimulationExecutionORM.__table_args__.
+        simulation_columns = {column["name"] for column in inspect(engine).get_columns("simulation_executions")}
+        with engine.begin() as connection:
+            if "actor_id" not in simulation_columns:
+                connection.execute(text("ALTER TABLE simulation_executions ADD COLUMN actor_id VARCHAR(128)"))
+            if "request_key" not in simulation_columns:
+                connection.execute(text("ALTER TABLE simulation_executions ADD COLUMN request_key VARCHAR(128)"))
+            # Old drafts recorded no owner. Leave those NULL/unowned rather
+            # than guessing an actor and disclosing their history to it.
+            connection.execute(text("UPDATE simulation_executions SET request_key = execution_id WHERE request_key IS NULL"))
+            connection.execute(text(
+                "CREATE UNIQUE INDEX IF NOT EXISTS uq_simulation_actor_request_key "
+                "ON simulation_executions (actor_id, request_key)"
+            ))
+            connection.execute(text(
+                "CREATE INDEX IF NOT EXISTS ix_simulation_executions_actor_id "
+                "ON simulation_executions (actor_id)"
+            ))
 
 
 def get_db() -> Generator[Session, None, None]:

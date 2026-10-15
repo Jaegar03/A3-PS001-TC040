@@ -11,6 +11,7 @@ import type {
   FileAnalysisResponse,
   NetworkAnalysisResponse,
   TextAnalysisResponse,
+  SimulationRun,
 } from "@/types/api";
 
 export const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000").replace(/\/$/, "");
@@ -86,4 +87,9 @@ export const api = {
   analyzePrompt: (prompt: string) => request<TextAnalysisResponse>("/api/v1/analyze/prompt", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ prompt }) }),
   analyzeSql: (sql: string) => request<TextAnalysisResponse>("/api/v1/analyze/sql", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ sql }) }),
   analyzeUrl: (url: string) => request<TextAnalysisResponse>("/api/v1/analyze/url", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url }) }),
+  runSimulation: (scenarioId: string, requestKey: string) => request<SimulationRun>("/api/simulation/run", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ scenario_id: scenarioId, mode: "simulation", request_key: requestKey }),
+  }),
 };

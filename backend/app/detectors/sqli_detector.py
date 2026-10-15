@@ -22,7 +22,7 @@ from app.detectors.common import (
 from app.detectors.sqli.lexer import analyze as lexical_analyze
 from app.detectors.sqli.normalizer import build_sqli_views
 from app.events.schema import SecurityEvent, SecurityEventType
-from app.schemas.detection import DetectionResult, DetectorCategory, Evidence
+from app.schemas.detection import DetectionResult, DetectorCategory, Evidence, FindingStatus
 
 logger = logging.getLogger("sentivra.sqli")
 
@@ -48,6 +48,7 @@ class SQLInjectionDetector(BaseDetector):
             return safe_result(self.name, self.category, confidence=0.5, model_version=self.version)
         views = build_sqli_views(bounded_text(text))
         hits = []
+        timed_out = False
         for rule in self.rules:
             view = views.raw if rule.extra.get("view") == "raw" else views.normalized
             try:
@@ -55,6 +56,7 @@ class SQLInjectionDetector(BaseDetector):
                     hits.append(rule)
             except RuleTimeout:
                 logger.warning("SQLi rule timed out: %s", rule.id)
+                timed_out = True
         lexical = lexical_analyze(text)
         strongest_by_category: dict[str, float] = {}
         for rule in hits:
@@ -66,7 +68,10 @@ class SQLInjectionDetector(BaseDetector):
         if views.url_decode_rounds >= 2 or views.unicode_folded:
             score = min(1.0, score + 0.05)
         if not score:
-            return safe_result(self.name, self.category, confidence=0.85, model_version=self.version)
+            result = safe_result(self.name, self.category, confidence=0.85, model_version=self.version)
+            if timed_out:
+                result.status = FindingStatus.PARTIAL_ANALYSIS
+            return result
         evidence = [Evidence(type=f"rule:{r.id}", detail=r.description, weight=r.weight) for r in hits]
         if lexical.signals:
             evidence.append(Evidence(type="lexical_structure", detail="SQL lexical signals: " + ", ".join(lexical.signals), weight=lexical.strength))
@@ -74,4 +79,5 @@ class SQLInjectionDetector(BaseDetector):
         severity = severity_from_score(score)
         return DetectionResult(detector=self.name, category=self.category, severity=severity,
             score=round(score, 4), confidence=round(min(0.88, 0.62 + 0.04 * min(len(strongest_by_category), 4)), 2),
-            evidence=evidence, recommended_action=action_for(severity), model_version=self.version)
+            evidence=evidence, recommended_action=action_for(severity), model_version=self.version,
+            status=FindingStatus.PARTIAL_ANALYSIS if timed_out else FindingStatus.SUSPICIOUS)
